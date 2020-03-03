@@ -394,6 +394,8 @@ class ConstructorResolver {
 			String beanName, RootBeanDefinition mbd, @Nullable Object[] explicitArgs) {
 
 		BeanWrapperImpl bw = new BeanWrapperImpl();
+		// 初始化 BeanWrapperImpl
+		// 向BeanWrapper对象中添加 ConversionService 对象和属性编辑器 PropertyEditor 对象
 		this.beanFactory.initBeanWrapper(bw);
 
 		Object factoryBean;

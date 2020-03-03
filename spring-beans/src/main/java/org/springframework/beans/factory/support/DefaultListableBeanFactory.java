@@ -488,6 +488,8 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	@Override
 	public String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
 		if (!isConfigurationFrozen() || type == null || !allowEagerInit) {
+			// 不可用缓存、类型无效、不允许提前加载初始化
+			// 需要获取当前type的原始类型，继续获取数据
 			return doGetBeanNamesForType(ResolvableType.forRawClass(type), includeNonSingletons, allowEagerInit);
 		}
 		Map<Class<?>, String[]> cache =

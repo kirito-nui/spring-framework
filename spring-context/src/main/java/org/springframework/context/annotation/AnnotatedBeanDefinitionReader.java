@@ -250,7 +250,11 @@ public class AnnotatedBeanDefinitionReader {
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
+		// 先把此实体类型转换为一个BeanDefinition
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
+		//abd.getMetadata() 元数据包括注解信息、是否内部类、类Class基本信息等等
+		// 此处由conditionEvaluator#shouldSkip去过滤，此Class是否是配置类。
+		// 大体逻辑为：必须有@Configuration修饰。然后解析一些Condition注解，看是否排除~
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}

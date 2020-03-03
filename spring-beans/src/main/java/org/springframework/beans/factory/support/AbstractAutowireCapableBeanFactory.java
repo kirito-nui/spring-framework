@@ -549,10 +549,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeanCreationException {
 
 		// Instantiate the bean.
+		// 用BeanWrapper来持有创建出来的Bean对象
 		BeanWrapper instanceWrapper = null;
+		//如果是单例的话，则先把缓存中的同名bean清除
 		if (mbd.isSingleton()) {
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
+		//实际创建的交给createBeanInstance来完成，
+		//bean的生成，这里会使用默认的类生成器，包装成BeanWrapperImpl类，
+		//为了下面的populateBean方法的属性注入做准备
 		if (instanceWrapper == null) {
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
@@ -1161,6 +1166,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
 		// Make sure bean class is actually resolved at this point.
+		// 确保bean类实际上已经解析过了，可以实例化
 		Class<?> beanClass = resolveBeanClass(mbd, beanName);
 
 		if (beanClass != null && !Modifier.isPublic(beanClass.getModifiers()) && !mbd.isNonPublicAccessAllowed()) {
@@ -1168,11 +1174,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
 		}
 
+		// <1> 如果存在 Supplier 回调，则使用给定的回调方法初始化策略
 		Supplier<?> instanceSupplier = mbd.getInstanceSupplier();
 		if (instanceSupplier != null) {
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
 
+		// <2> 使用 FactoryBean 的 factory-method 来创建，支持静态工厂和实例工厂
 		if (mbd.getFactoryMethodName() != null) {
 			return instantiateUsingFactoryMethod(beanName, mbd, args);
 		}
@@ -1225,7 +1233,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected BeanWrapper obtainFromSupplier(Supplier<?> instanceSupplier, String beanName) {
 		Object instance;
 
+		// 获得原创建的 Bean 的对象名
 		String outerBean = this.currentlyCreatedBean.get();
+		// 设置新的 Bean 的对象名，到 currentlyCreatedBean 中
 		this.currentlyCreatedBean.set(beanName);
 		try {
 			instance = instanceSupplier.get();
