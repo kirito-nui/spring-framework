@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<bean id="codes" class="com.ying.entiy.Codes" depends-on="worker">
+		<!--<property name="name" value="法外狂徒张三"/>-->
+		<!--<property name="age" value="18"/>-->
+		<!--<property name="list">-->
+			<!--<list>-->
+				<!--<value>USB</value>-->
+				<!--<value>HDMI</value>-->
+				<!--<value>Thunderbolt</value>-->
+			<!--</list>-->
+		<!--</property>-->
+		<constructor-arg index="0" value="法外狂徒张三"/>
+		<constructor-arg index="1" value="18"/>
+		<constructor-arg index="2">
+			<list>
+				<value>USB</value>
+				<value>HDMI</value>
+				<value>Thunderbolt</value>
+			</list>
+		</constructor-arg>
+        </bean>
+        <bean id="worker" class="com.ying.entiy.Worker">
+        </bean>
+
+        <bean id="myBeanFactory" class="com.ying.factory.MyBeanFactory">
+        </bean>
+        <bean id="myBeanFactoryInstantiation" factory-bean="myBeanFactory" factory-method="getCodesBean">
+            <constructor-arg index="0" value="法外狂徒张三"/>
+            <constructor-arg index="1" value="20"/>
+        </bean>
+    </beans>

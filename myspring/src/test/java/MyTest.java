@@ -4,8 +4,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+//import org.springframework.test.context.ContextConfiguration;
+//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * @author xieyingheng
@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @description: TODO
  * @date 2020-02-0610:41
  */
-@RunWith(SpringJUnit4ClassRunner.class) //使用junit4进行测试
+//@RunWith(SpringJUnit4ClassRunner.class) //使用junit4进行测试
 //@ContextConfiguration(locations={"bean.xml"}) //加载配置文件
 public class MyTest {
 
