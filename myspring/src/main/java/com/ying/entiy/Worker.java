@@ -12,6 +12,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class Worker {
 
+	private Codes codes;
+
+	public Worker(Codes codes) {
+		this.codes = codes;
+	}
+
+	public Codes getCodes() {
+		return codes;
+	}
+
+	public void setCodes(Codes codes) {
+		this.codes = codes;
+	}
+
 	public Worker() {
 		System.out.println("init Worker()");
 	}

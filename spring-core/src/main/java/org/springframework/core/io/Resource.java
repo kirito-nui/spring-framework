@@ -80,6 +80,9 @@ public interface Resource extends InputStreamSource {
 	 * and must be read and closed to avoid resource leaks.
 	 * <p>Will be {@code false} for typical resource descriptors.
 	 */
+	/**
+	 * 资源所代表的句柄是否被一个 stream 打开了
+	 */
 	default boolean isOpen() {
 		return false;
 	}

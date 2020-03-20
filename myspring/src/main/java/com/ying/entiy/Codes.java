@@ -1,10 +1,11 @@
 package com.ying.entiy;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.weaving.LoadTimeWeaverAware;
+import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @author xieyingheng
@@ -15,7 +16,9 @@ import java.util.List;
  */
 @Component
 @Data
-public class Codes {
+public class Codes implements BeanNameAware, LoadTimeWeaverAware, InitializingBean {
+
+	private String beanName;
 
 	private String name;
 
@@ -23,7 +26,11 @@ public class Codes {
 
 	private String[] list;
 
-	private Worker worker;
+	private Worker worker1;
+
+	public void init(){
+		System.out.println("invoke codes init()");
+	}
 
 	public Codes() {
 		System.out.println("invoke Codes()");
@@ -43,7 +50,15 @@ public class Codes {
 	public Codes(String name, int age, Worker worker) {
 		this.name = name;
 		this.age = age;
-		this.worker = worker;
+		this.worker1 = worker;
+	}
+
+	public String[] getList() {
+		return list;
+	}
+
+	public void setList(String[] list) {
+		this.list = list;
 	}
 
 	public String getName() {
@@ -63,10 +78,26 @@ public class Codes {
 	}
 
 	public Worker getWorker() {
-		return worker;
+		return worker1;
 	}
 
 	public void setWorker(Worker worker) {
-		this.worker = worker;
+		this.worker1 = worker;
+	}
+
+	@Override
+	public void setBeanName(String name) {
+		System.out.println("invoke codes setBeanName()");
+		this.beanName = name;
+	}
+
+	@Override
+	public void setLoadTimeWeaver(LoadTimeWeaver loadTimeWeaver) {
+
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		System.out.println("invoke afterPropertiesSet()");
 	}
 }
