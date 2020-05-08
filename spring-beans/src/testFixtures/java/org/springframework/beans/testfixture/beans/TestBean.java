@@ -172,6 +172,7 @@ public class TestBean implements BeanNameAware, BeanFactoryAware, ITestBean, IOt
 
 	@Override
 	public String getName() {
+		int i = 1/0;
 		return name;
 	}
 

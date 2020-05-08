@@ -235,10 +235,14 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	@Override
 	protected Object doGetTransaction() {
+		// 这里DataSourceTransactionObject是事务管理器的一个内部类
+		// DataSourceTransactionObject就是一个transaction，这里new了一个出来
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
 		txObject.setSavepointAllowed(isNestedTransactionAllowed());
+		// 解绑与绑定的作用在此时体现，如果当前线程有绑定的话，将会取出holder
 		ConnectionHolder conHolder =
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
+		// 此时的holder被标记成一个旧holder
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}
@@ -352,11 +356,13 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 	@Override
 	protected void doSetRollbackOnly(DefaultTransactionStatus status) {
+		// 将status中的transaction取出
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) status.getTransaction();
 		if (status.isDebug()) {
 			logger.debug("Setting JDBC transaction [" + txObject.getConnectionHolder().getConnection() +
 					"] rollback-only");
 		}
+		// transaction执行标记回滚
 		txObject.setRollbackOnly();
 	}
 
@@ -365,13 +371,16 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
 
 		// Remove the connection holder from the thread, if exposed.
+		// 如果transaction中的holder是新的话，从当前线程中解绑holder
 		if (txObject.isNewConnectionHolder()) {
 			TransactionSynchronizationManager.unbindResource(obtainDataSource());
 		}
 
 		// Reset connection.
+		// 从transaction中获取holder中的connection
 		Connection con = txObject.getConnectionHolder().getConnection();
 		try {
+			// 将连接重置
 			if (txObject.isMustRestoreAutoCommit()) {
 				con.setAutoCommit(true);
 			}
@@ -389,6 +398,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 			DataSourceUtils.releaseConnection(con, this.dataSource);
 		}
 
+		// 将holder里的属性重置
 		txObject.getConnectionHolder().clear();
 	}
 
@@ -446,6 +456,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 		}
 
 		public void setRollbackOnly() {
+			// 这里将transaction里面的connHolder标记回滚
 			getConnectionHolder().setRollbackOnly();
 		}
 

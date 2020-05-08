@@ -19,6 +19,8 @@
 		</tx:attributes>
 	</tx:advice>
 
+	<!--rollback-for  将被触发进行回滚的 Exception(s)；以逗号分开。 如：'com.foo.MyBusinessException,ServletException'-->
+	<!--no-rollback-for  不被触发进行回滚的 Exception(s)；以逗号分开。 如：'com.foo.MyBusinessException,ServletException'-->
 	<tx:advice id="txRollbackAdvice">
 		<tx:attributes>
 			<tx:method name="get*" rollback-for="java.lang.Exception"/>

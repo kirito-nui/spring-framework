@@ -44,11 +44,16 @@ public abstract class AspectJProxyUtils {
 	 */
 	public static boolean makeAdvisorChainAspectJCapableIfNecessary(List<Advisor> advisors) {
 		// Don't add advisors to an empty list; may indicate that proxying is just not required
+		// 如果通知器列表是一个空列表，则啥都不做
 		if (!advisors.isEmpty()) {
 			boolean foundAspectJAdvice = false;
 			for (Advisor advisor : advisors) {
 				// Be careful not to get the Advice without a guard, as this might eagerly
 				// instantiate a non-singleton AspectJ aspect...
+				/*
+				 * 下面的 for 循环用于检测 advisors 列表中是否存在
+				 * AspectJ 类型的 Advisor 或 Advice
+				 */
 				if (isAspectJAdvice(advisor)) {
 					foundAspectJAdvice = true;
 					break;

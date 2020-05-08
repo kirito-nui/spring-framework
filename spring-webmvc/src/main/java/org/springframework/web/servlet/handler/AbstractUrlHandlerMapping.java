@@ -120,8 +120,12 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	@Override
 	@Nullable
 	protected Object getHandlerInternal(HttpServletRequest request) throws Exception {
+
+		//从request中取出请求路径
 		String lookupPath = getUrlPathHelper().getLookupPathForRequest(request);
 		request.setAttribute(LOOKUP_PATH, lookupPath);
+
+		// 从hanlderMap关系中 获取handler
 		Object handler = lookupHandler(lookupPath, request);
 		if (handler == null) {
 			// We need to care for the default handler directly, since we need to
@@ -130,6 +134,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 			if ("/".equals(lookupPath)) {
 				rawHandler = getRootHandler();
 			}
+			//如果rawHandler为空，那么使用默认Handler
 			if (rawHandler == null) {
 				rawHandler = getDefaultHandler();
 			}
@@ -139,7 +144,9 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 					String handlerName = (String) rawHandler;
 					rawHandler = obtainApplicationContext().getBean(handlerName);
 				}
+				//验证handler
 				validateHandler(rawHandler, request);
+				//根据handler构造handlerExecutionChain,其中放入数个拦截器
 				handler = buildPathExposingHandler(rawHandler, lookupPath, lookupPath, null);
 			}
 		}
@@ -162,17 +169,20 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 	@Nullable
 	protected Object lookupHandler(String urlPath, HttpServletRequest request) throws Exception {
 		// Direct match?
-		Object handler = this.handlerMap.get(urlPath);
+		Object handler = this.handlerMap.get(urlPath); // 存储的数据类似于key="/say",value=DemoController
 		if (handler != null) {
 			// Bean name or resolved handler?
 			if (handler instanceof String) {
+				//如果handler是字符串，那么获取到其Bean
 				String handlerName = (String) handler;
 				handler = obtainApplicationContext().getBean(handlerName);
 			}
 			validateHandler(handler, request);
+			// 根据handler生成HandlerExecutuonChain,并往其中加入PathExposingHandlerInterceptor/UriTemplateVariablesHandlerInterceptor 这两个拦截器
 			return buildPathExposingHandler(handler, urlPath, urlPath, null);
 		}
 
+		//如果路径是采用的正则表达式匹配，那么这里会寻找一个最合适的url
 		// Pattern match?
 		List<String> matchingPatterns = new ArrayList<>();
 		for (String registeredPattern : this.handlerMap.keySet()) {
@@ -195,6 +205,7 @@ public abstract class AbstractUrlHandlerMapping extends AbstractHandlerMapping i
 			}
 			bestMatch = matchingPatterns.get(0);
 		}
+		//根据找到的最合适的url 找到Handler，随后跟上面一样 构造HandlerExecutionChain，并添加拦截器
 		if (bestMatch != null) {
 			handler = this.handlerMap.get(bestMatch);
 			if (handler == null) {

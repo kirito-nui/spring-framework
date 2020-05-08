@@ -38,6 +38,9 @@ public class SourceFilteringListener implements GenericApplicationListener, Smar
 
 	private final Object source;
 
+	/**
+	 * 代理的监听器
+	 */
 	@Nullable
 	private GenericApplicationListener delegate;
 

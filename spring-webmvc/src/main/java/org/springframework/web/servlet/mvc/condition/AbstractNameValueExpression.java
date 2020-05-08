@@ -33,11 +33,14 @@ import org.springframework.util.ObjectUtils;
  */
 abstract class AbstractNameValueExpression<T> implements NameValueExpression<T> {
 
+	// 参数的名字
 	protected final String name;
 
+	// 参数的值
 	@Nullable
 	protected final T value;
 
+	// 参数的匹配规则,是= 还是!=
 	protected final boolean isNegated;
 
 
@@ -77,10 +80,15 @@ abstract class AbstractNameValueExpression<T> implements NameValueExpression<T> 
 		if (this.value != null) {
 			isMatch = matchValue(request);
 		}
-		else {
+		else { // 没有value时,只要匹配name就好
 			isMatch = matchName(request);
 		}
-		return this.isNegated != isMatch;
+		return this.isNegated != isMatch; // 这边需要看仔细,=与!=的处理
+		/**
+		 * ParamExpression中给出matchName与matchValue的实现.
+		 *
+		 * ParamExpression这里又是接口+抽象实现+模板方法设计模式
+		 */
 	}
 
 

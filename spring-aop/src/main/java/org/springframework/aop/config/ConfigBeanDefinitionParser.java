@@ -103,6 +103,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 				new CompositeComponentDefinition(element.getTagName(), parserContext.extractSource(element));
 		parserContext.pushContainingComponent(compositeDef);
 
+		//注册AspectJAutoProxyCreatorIfNecessary
 		configureAutoProxyCreator(parserContext, element);
 
 		List<Element> childElts = DomUtils.getChildElements(element);
@@ -245,7 +246,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 			parserContext.popAndRegisterContainingComponent();
 		}
 		finally {
-			this.parseState.pop();
+			this.parseState.pop(); // 在<aop:pointcut>标签解析完毕后，让之前推送至栈顶的PointcutEntry出栈，表示此次<aop:pointcut>标签解析完毕。
 		}
 	}
 
@@ -331,16 +332,16 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 			aspectFactoryDef.getPropertyValues().add("aspectBeanName", aspectName);
 			aspectFactoryDef.setSynthetic(true);
 
-			// register the pointcut
+			// register the pointcut 根据织入方式（before、after这些）创建RootBeanDefinition，名为adviceDef即advice定义
 			AbstractBeanDefinition adviceDef = createAdviceDefinition(
 					adviceElement, parserContext, aspectName, order, methodDefinition, aspectFactoryDef,
 					beanDefinitions, beanReferences);
 
-			// configure the advisor
+			// configure the advisor 将上一步创建的RootBeanDefinition写入一个新的RootBeanDefinition，构造一个新的对象，名为advisorDefinition，即advisor定义
 			RootBeanDefinition advisorDefinition = new RootBeanDefinition(AspectJPointcutAdvisor.class);
 			advisorDefinition.setSource(parserContext.extractSource(adviceElement));
 			advisorDefinition.getConstructorArgumentValues().addGenericArgumentValue(adviceDef);
-			if (aspectElement.hasAttribute(ORDER_PROPERTY)) {
+			if (aspectElement.hasAttribute(ORDER_PROPERTY)) { //有没有"order"属性的，有就设置一下，"order"属性是用来控制切入方法优先级的。
 				advisorDefinition.getPropertyValues().add(
 						ORDER_PROPERTY, aspectElement.getAttribute(ORDER_PROPERTY));
 			}
@@ -409,6 +410,13 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 	 */
 	private Class<?> getAdviceClass(Element adviceElement, ParserContext parserContext) {
 		String elementName = parserContext.getDelegate().getLocalName(adviceElement);
+		/**
+		 * before对应AspectJMethodBeforeAdvice
+		 * After对应AspectJAfterAdvice
+		 * after-returning对应AspectJAfterReturningAdvice
+		 * after-throwing对应AspectJAfterThrowingAdvice
+		 * around对应AspectJAroundAdvice
+		 */
 		if (BEFORE.equals(elementName)) {
 			return AspectJMethodBeforeAdvice.class;
 		}
@@ -440,7 +448,7 @@ class ConfigBeanDefinitionParser implements BeanDefinitionParser {
 		AbstractBeanDefinition pointcutDefinition = null;
 
 		try {
-			this.parseState.push(new PointcutEntry(id));
+			this.parseState.push(new PointcutEntry(id));// 推送一个PointcutEntry，表示当前Spring上下文正在解析Pointcut标签。
 			pointcutDefinition = createPointcutDefinition(expression);
 			pointcutDefinition.setSource(parserContext.extractSource(pointcutElement));
 

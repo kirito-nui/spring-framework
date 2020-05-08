@@ -39,6 +39,7 @@ import org.springframework.web.util.WebUtils;
  */
 public final class ParamsRequestCondition extends AbstractRequestCondition<ParamsRequestCondition> {
 
+	// 保存解析出来的param匹配条件
 	private final Set<ParamExpression> expressions;
 
 
