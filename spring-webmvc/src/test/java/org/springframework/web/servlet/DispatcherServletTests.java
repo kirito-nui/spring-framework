@@ -90,9 +90,11 @@ public class DispatcherServletTests {
 		complexConfig.addInitParameter("class", "notWritable");
 		complexConfig.addInitParameter("unknownParam", "someValue");
 
-		simpleDispatcherServlet = new DispatcherServlet();
-		simpleDispatcherServlet.setContextClass(SimpleWebApplicationContext.class);
-		simpleDispatcherServlet.init(servletConfig);
+//		complexConfig.addInitParameter("contextConfigLocation", "/WEB-INF/spring-servlet.xml");
+
+//		simpleDispatcherServlet = new DispatcherServlet();
+//		simpleDispatcherServlet.setContextClass(SimpleWebApplicationContext.class);
+//		simpleDispatcherServlet.init(servletConfig);
 
 		complexDispatcherServlet = new DispatcherServlet();
 		complexDispatcherServlet.setContextClass(ComplexWebApplicationContext.class);

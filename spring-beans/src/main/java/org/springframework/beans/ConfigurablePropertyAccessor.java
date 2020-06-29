@@ -49,6 +49,7 @@ public interface ConfigurablePropertyAccessor extends PropertyAccessor, Property
 	 * Set whether to extract the old property value when applying a
 	 * property editor to a new value for a property.
 	 */
+	// PropertyEditor 使用时是否暴露修改前后值
 	void setExtractOldValueForEditor(boolean extractOldValueForEditor);
 
 	/**
@@ -65,6 +66,7 @@ public interface ConfigurablePropertyAccessor extends PropertyAccessor, Property
 	 * {@link NullValueInNestedPathException}.
 	 * <p>Default is {@code false} on a plain PropertyAccessor instance.
 	 */
+	// 嵌套注入时当属性为 null 时是否自动生成对象
 	void setAutoGrowNestedPaths(boolean autoGrowNestedPaths);
 
 	/**

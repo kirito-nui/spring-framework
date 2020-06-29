@@ -38,6 +38,11 @@ import org.springframework.util.ObjectUtils;
  * @since 13 May 2001
  * @see PropertyValues
  * @see BeanWrapper
+ *
+ *
+ *
+ *
+ * PropertyValue 缓存了对 key-value 解析相关的信息，避免重复解析
  */
 @SuppressWarnings("serial")
 public class PropertyValue extends BeanMetadataAttributeAccessor implements Serializable {
@@ -47,17 +52,22 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 	@Nullable
 	private final Object value;
 
+	// 2.1 属性值是否为 Optional
 	private boolean optional = false;
 
+	// 2.2 属性值是否已经进行了类型转换
 	private boolean converted = false;
 
+	// 2.3 类型转换后的属性值
 	@Nullable
 	private Object convertedValue;
 
+	// 3.1 属性值是否需要进行类型转换，如果转换前后对象都是同一个，说明不用转换
 	/** Package-visible field that indicates whether conversion is necessary. */
 	@Nullable
 	volatile Boolean conversionNecessary;
 
+	// 3.2 缓存解析后的属性名称，如 attr['info']['name']
 	/** Package-visible field for caching the resolved property path tokens. */
 	@Nullable
 	transient volatile Object resolvedTokens;

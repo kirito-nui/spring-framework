@@ -53,10 +53,18 @@ import org.springframework.web.util.WebUtils;
  *
  * @author Arjen Poutsma
  * @author Rossen Stoyanchev
- * @since 3.1
+ * @since 3.1    此处泛型为：RequestMappingInfo   用这个类来表示mapping映射关系、参数、条件等
+ *
+ *
+ *
+ * 它主要做的事就是确定了泛型类型为：RequestMappingInfo，然后很多方法都依托它来完成判定逻辑，比如上面三个@Override方法就是对父类抽象方法的实现。委托给RequestMappingInfo去实现的~
+ *
+ * 而RequestMappingInfo的构建工作，Spring MVC理论上是可以允许有多种方案。鉴于Spring MVC给出的唯一实现类为RequestMappingHandlerMapping
  */
 public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMethodMapping<RequestMappingInfo> {
 
+
+	// 专门处理Http的Options方法的HandlerMethod
 	private static final Method HTTP_OPTIONS_HANDLE_METHOD;
 
 	static {
@@ -70,6 +78,7 @@ public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMe
 	}
 
 
+	// 构造函数：给set了一个HandlerMethodMappingNamingStrategy
 	protected RequestMappingInfoHandlerMapping() {
 		setHandlerMethodMappingNamingStrategy(new RequestMappingInfoHandlerMethodMappingNamingStrategy());
 	}
@@ -78,6 +87,8 @@ public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMe
 	/**
 	 * Get the URL path patterns associated with the supplied {@link RequestMappingInfo}.
 	 */
+
+	// 复写父类的抽象方法：获取mappings里面的patters们~
 	@Override
 	protected Set<String> getMappingPathPatterns(RequestMappingInfo info) {
 		return info.getPatternsCondition().getPatterns();
@@ -88,6 +99,9 @@ public abstract class RequestMappingInfoHandlerMapping extends AbstractHandlerMe
 	 * return a (potentially new) instance with conditions that match the
 	 * current request -- for example with a subset of URL patterns.
 	 * @return an info in case of a match; or {@code null} otherwise.
+	 *
+	 *
+	 * 校验看看这个Mapping是否能匹配上这个request，若能匹配上就返回一个RequestMappingInfo
 	 */
 	@Override
 	protected RequestMappingInfo getMatchingMapping(RequestMappingInfo info, HttpServletRequest request) {

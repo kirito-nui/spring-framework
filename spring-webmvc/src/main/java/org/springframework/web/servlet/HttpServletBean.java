@@ -16,6 +16,7 @@
 
 package org.springframework.web.servlet;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,6 +24,8 @@ import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -114,6 +117,21 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 	}
 
 	/**
+	 * yyh加
+	 * @param req
+	 * @param resp
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		System.out.println("invoke service方法");
+		System.out.println(getServletConfig().getServletContext());
+		System.out.println(getServletContext());
+		super.service(req, resp);
+	}
+
+	/**
 	 * Set the {@code Environment} that this servlet runs in.
 	 * <p>Any environment set here overrides the {@link StandardServletEnvironment}
 	 * provided by default.
@@ -148,6 +166,26 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		return new StandardServletEnvironment();
 	}
 
+
+	/**
+	 *
+	 * <servlet>
+	 *     <servlet-name>spring</servlet-name>
+	 *     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+	 *     <!-- 可以自定义servlet.xml配置文件的位置和名称，默认为WEB-INF目录下，名称为[<servlet-name>]-servlet.xml，如spring-servlet.xml
+	 *     <init-param>
+	 *         <param-name>contextConfigLocation</param-name>
+	 *         <param-value>/WEB-INF/spring-servlet.xml</param-value> // 默认
+	 *     </init-param>
+	 *     -->
+	 *     <load-on-startup>1</load-on-startup>
+	 * </servlet>
+	 * <servlet-mapping>
+	 *     <servlet-name>spring</servlet-name>
+	 *     <url-pattern>*.do</url-pattern>
+	 * </servlet-mapping>
+	 *
+	 */
 	/**
 	 * Map config parameters onto bean properties of this servlet, and
 	 * invoke subclass initialization.
@@ -235,19 +273,24 @@ public abstract class HttpServletBean extends HttpServlet implements Environment
 		public ServletConfigPropertyValues(ServletConfig config, Set<String> requiredProperties)
 				throws ServletException {
 
+			// 获得缺失的属性的集合
 			Set<String> missingProps = (!CollectionUtils.isEmpty(requiredProperties) ?
 					new HashSet<>(requiredProperties) : null);
 
+			// <1> 遍历 ServletConfig 的初始化参数集合，添加到 ServletConfigPropertyValues 中，并从 missingProps 移除
 			Enumeration<String> paramNames = config.getInitParameterNames();
 			while (paramNames.hasMoreElements()) {
 				String property = paramNames.nextElement();
 				Object value = config.getInitParameter(property);
+				// 添加到 ServletConfigPropertyValues 中
 				addPropertyValue(new PropertyValue(property, value));
+				// 从 missingProps 中移除
 				if (missingProps != null) {
 					missingProps.remove(property);
 				}
 			}
 
+			// <2> 如果存在缺失的属性，抛出 ServletException 异常
 			// Fail if we are still missing properties.
 			if (!CollectionUtils.isEmpty(missingProps)) {
 				throw new ServletException(

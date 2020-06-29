@@ -41,6 +41,8 @@ public interface PropertyEditorRegistry {
 	 * @param requiredType the type of the property
 	 * @param propertyEditor the editor to register
 	 */
+
+	// 1. 根据类型注册 PropertyEditor
 	void registerCustomEditor(Class<?> requiredType, PropertyEditor propertyEditor);
 
 	/**
@@ -66,6 +68,8 @@ public interface PropertyEditorRegistry {
 	 * {@code null} if registering an editor for all properties of the given type
 	 * @param propertyEditor editor to register
 	 */
+	// 2. 根据类型(requiredType)和属性(propertyPath)注册 PropertyEditor
+	//    查找时优先根据 propertyPath 查找对应的 PropertyEditor，propertyPath 可以为嵌套属性
 	void registerCustomEditor(@Nullable Class<?> requiredType, @Nullable String propertyPath, PropertyEditor propertyEditor);
 
 	/**
@@ -76,6 +80,7 @@ public interface PropertyEditorRegistry {
 	 * {@code null} if looking for an editor for all properties of the given type
 	 * @return the registered editor, or {@code null} if none
 	 */
+	// 3. 根据类型和属性查找 PropertyEditor
 	@Nullable
 	PropertyEditor findCustomEditor(@Nullable Class<?> requiredType, @Nullable String propertyPath);
 

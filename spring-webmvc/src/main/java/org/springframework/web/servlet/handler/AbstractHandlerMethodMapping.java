@@ -91,6 +91,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	private static final HandlerMethod PREFLIGHT_AMBIGUOUS_MATCH =
 			new HandlerMethod(new EmptyHandler(), ClassUtils.getMethod(EmptyHandler.class, "handle"));
 
+	// 跨域相关
 	private static final CorsConfiguration ALLOW_CORS_CONFIG = new CorsConfiguration();
 
 	static {
@@ -101,10 +102,16 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	}
 
 
+	// 默认不会去祖先容器里面找Handlers
 	private boolean detectHandlerMethodsInAncestorContexts = false;
 
 	/**
 	 * Mapping 命名策略
+	 * 为处HandlerMethod的映射分配名称的策略接口   只有一个方法getName()
+	 * 唯一实现为：RequestMappingInfoHandlerMethodMappingNamingStrategy
+	 * 策略为：@RequestMapping指定了name属性，那就以指定的为准  否则策略为：取出Controller所有的`大写字母` + # + method.getName()
+	 * 如：AppoloController#match方法  最终的name为：AC#match
+	 * 当然这个你也可以自己实现这个接口，然后set进来即可（只是一般没啥必要这么去干~~）
 	 */
 	@Nullable
 	private HandlerMethodMappingNamingStrategy<T> namingStrategy;
@@ -152,6 +159,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 
 	/**
 	 * Return a (read-only) map with all mappings and HandlerMethod's.
+	 *
+	 * 此处细节：使用的是读写锁  比如此处使用的是读锁   获得所有的注册进去的Handler的Map
 	 */
 	public Map<T, HandlerMethod> getHandlerMethods() {
 		this.mappingRegistry.acquireReadLock();
@@ -169,6 +178,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @return a list of matching HandlerMethod's or {@code null}; the returned
 	 * list will never be modified and is safe to iterate.
 	 * @see #setHandlerMethodMappingNamingStrategy
+	 *
+	 *
+	 *
+	 * 此处是根据mappingName来获取一个Handler
 	 */
 	@Nullable
 	public List<HandlerMethod> getHandlerMethodsForMappingName(String mappingName) {
@@ -188,6 +201,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @param mapping the mapping for the handler method
 	 * @param handler the handler
 	 * @param method the method
+	 *
+	 *
+	 *
+	 *              最终都是委托给mappingRegistry去做了注册的工作   此处日志级别为trace级别
 	 */
 	public void registerMapping(T mapping, Object handler, Method method) {
 		if (logger.isTraceEnabled()) {
@@ -228,9 +245,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 */
 	protected void initHandlerMethods() {
 		// <1.1> 遍历 Bean ，逐个处理
+		// getCandidateBeanNames：Object.class相当于拿到当前容器（一般都是当前容器） 内所有的Bean定义信息
+		// 如果阁下容器隔离到的话，这里一般只会拿到@Controller标注的web组件  以及其它相关web组件的  不会非常的多的~~~~
 		for (String beanName : getCandidateBeanNames()) {
 			if (!beanName.startsWith(SCOPED_TARGET_NAME_PREFIX)) {
 				// <1.2> 处理 Bean
+				// 会在每个Bean里面找处理方法，HandlerMethod，然后注册进去
 				processCandidateBean(beanName);
 			}
 		}
@@ -260,6 +280,12 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * @since 5.1
 	 * @see #isHandler
 	 * @see #detectHandlerMethods
+	 *
+	 *
+	 * 确定指定的候选bean的类型，如果标识为Handler类型，则调用DetectHandlerMethods
+	 * isHandler(beanType):判断这个type是否为Handler类型   它是个抽象方法，由子类去决定到底啥才叫Handler~~~~
+	 * `RequestMappingHandlerMapping`的判断依据为：该类上标注了@Controller注解或者@RequestMapping注解  就算作是一个Handler
+	 * 所以此处：@Controller起到了一个特殊的作用，不能等价于@Component的哟~~~~
 	 */
 	protected void processCandidateBean(String beanName) {
 		Class<?> beanType = null;
@@ -274,6 +300,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		}
 		// 判断 Bean 是否为处理器，如果是，则扫描处理器方法
 		if (beanType != null && isHandler(beanType)) {
+			//都属于detect探测系列
 			detectHandlerMethods(beanName);
 		}
 	}
@@ -282,6 +309,10 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 	 * Look for handler methods in the specified handler bean.
 	 * @param handler either a bean name or an actual handler instance
 	 * @see #getMappingForMethod
+	 *
+	 *
+	 *
+	 * 在指定的Handler的bean中查找处理程序方法Methods  找打就注册进去：mappingRegistry
 	 */
 	protected void detectHandlerMethods(Object handler) {
 		// <1> 获得处理器类型
@@ -292,6 +323,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			// <2> 获得真实的类。因为，handlerType 可能是代理类
 			Class<?> userType = ClassUtils.getUserClass(handlerType);
 			// <3> 获得匹配的方法的集合
+			// getMappingForMethod属于一个抽象方法，由子类去决定它的寻找规则~~~~  什么才算作一个处理器方法
+			// @RequestMapping 解析成的 RequestMappingInfo 对象
 			Map<Method, T> methods = MethodIntrospector.selectMethods(userType,
 					(MethodIntrospector.MetadataLookup<T>) method -> {
 						try {
@@ -306,6 +339,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 				logger.trace(formatMappings(userType, methods));
 			}
 			// <4> 遍历方法，逐个注册 HandlerMethod
+			// 把找到的Method  一个个遍历，注册进去~~~~
 			methods.forEach((method, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
 				registerHandlerMethod(handler, invocableMethod, mapping);
@@ -389,6 +423,7 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 		this.mappingRegistry.acquireReadLock();
 		try {
 			// 找到对应的方法
+			// 委托给方法lookupHandlerMethod() 去找到一个HandlerMethod去最终处理~
 			HandlerMethod handlerMethod = lookupHandlerMethod(lookupPath, request);
 			// 返回对应的处理方法
 			return (handlerMethod != null ? handlerMethod.createWithResolvedBean() : null);
@@ -423,6 +458,8 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 			// 最终匹配上的，会new Match()放进matches里面去
 			addMatchingMappings(directPathMatches, matches, request);
 		}
+
+		// 当还没有匹配上的时候，别无选择，只能浏览所有映射
 		// 上述直接匹配不到则全部匹配(这里是坑)
 		if (matches.isEmpty()) {
 			// No choice but to go through all mappings...
@@ -458,9 +495,11 @@ public abstract class AbstractHandlerMethodMapping<T> extends AbstractHandlerMap
 							"Ambiguous handler methods mapped for '" + uri + "': {" + m1 + ", " + m2 + "}");
 				}
 			}
+			// 把最最佳匹配的方法  放进request的属性里面~~~
 			request.setAttribute(BEST_MATCHING_HANDLER_ATTRIBUTE, bestMatch.handlerMethod);
-			// 处理匹配结果
+			// 它也是做了一件事：request.setAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, lookupPath)
 			handleMatch(bestMatch.mapping, lookupPath, request);
+			// 最终返回的是HandlerMethod
 			return bestMatch.handlerMethod;
 		}
 		else {

@@ -52,6 +52,7 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Arjen Poutsma
  * @author Rossen Stoyanchev
  * @since 3.1
+ *
  */
 public final class RequestMappingInfo implements RequestCondition<RequestMappingInfo> {
 
@@ -203,6 +204,9 @@ public final class RequestMappingInfo implements RequestCondition<RequestMapping
 	 * Combine "this" request mapping info (i.e. the current instance) with another request mapping info instance.
 	 * <p>Example: combine type- and method-level request mappings.
 	 * @return a new request mapping info instance; never {@code null}
+	 *
+	 *
+	 * 因为类上和方法上都可能会有@RequestMapping注解，所以这里是把语意思合并  该方法来自顶层接口
 	 */
 	@Override
 	public RequestMappingInfo combine(RequestMappingInfo other) {

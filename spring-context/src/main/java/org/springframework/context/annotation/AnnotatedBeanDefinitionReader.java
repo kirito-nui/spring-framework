@@ -84,7 +84,11 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
+
+		//ConditionEvaluator完成条件注解的判断，在后面的Spring Boot中有大量的应用
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+
+		//这句会把一些自动注解处理器加入到AnnotationConfigApplicationContext下的BeanFactory的BeanDefinitions中
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 
@@ -246,7 +250,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * {@link BeanDefinition}, e.g. setting a lazy-init or primary flag
 	 * @since 5.0
 	 */
-	private <T> void doRegisterBean(Class<T> beanClass, @Nullable String name,
+	private <T> void  doRegisterBean(Class<T> beanClass, @Nullable String name,
 			@Nullable Class<? extends Annotation>[] qualifiers, @Nullable Supplier<T> supplier,
 			@Nullable BeanDefinitionCustomizer[] customizers) {
 
@@ -260,11 +264,17 @@ public class AnnotatedBeanDefinitionReader {
 		}
 
 		abd.setInstanceSupplier(supplier);
+
+		// 解析Scope
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		// 得到Bean的名称 一般为首字母小写（此处为AnnotationBeanNameGenerator）
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		// 设定一些注解默认值，如lazy、Primary等等
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+
+		// 解析qualifiers，若有此注解  则primary都成为true了
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
@@ -278,12 +288,14 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+		// 自定义定制信息(一般都不需要)
 		if (customizers != null) {
 			for (BeanDefinitionCustomizer customizer : customizers) {
 				customizer.customize(abd);
 			}
 		}
 
+		// 下面位解析Scope是否需要代理，最后把这个Bean注册进去
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);

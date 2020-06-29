@@ -33,6 +33,9 @@ import org.springframework.util.StringUtils;
  * @author Rob Harrop
  * @author Juergen Hoeller
  * @since 2.0
+ *
+ *
+ * 对属性进行增删改查。
  */
 @SuppressWarnings("serial")
 public abstract class AttributeAccessorSupport implements AttributeAccessor, Serializable {

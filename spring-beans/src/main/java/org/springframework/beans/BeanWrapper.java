@@ -45,13 +45,16 @@ import java.beans.PropertyDescriptor;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.validation.BeanPropertyBindingResult
  * @see org.springframework.validation.DataBinder#initBeanPropertyAccess()
+ *
+ *
+ * 主要完成了 JavaBean 的内省，包括 PropertyDescriptor 的获取，属性的赋值等。
  */
 public interface BeanWrapper extends ConfigurablePropertyAccessor {
 
 	/**
 	 * Specify a limit for array and collection auto-growing.
 	 * <p>Default is unlimited on a plain BeanWrapper.
-	 * @since 4.1
+	 * @since 4.1  设置集合或数组自动生成对象的最大嵌套深度
 	 */
 	void setAutoGrowCollectionLimit(int autoGrowCollectionLimit);
 

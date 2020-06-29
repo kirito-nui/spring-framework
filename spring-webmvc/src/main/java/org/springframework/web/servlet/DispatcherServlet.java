@@ -503,15 +503,15 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
-		initMultipartResolver(context);
-		initLocaleResolver(context);
-		initThemeResolver(context);
-		initHandlerMappings(context);
-		initHandlerAdapters(context);
-		initHandlerExceptionResolvers(context);
-		initRequestToViewNameTranslator(context);
-		initViewResolvers(context);
-		initFlashMapManager(context);
+		initMultipartResolver(context); //内容类型( Content-Type )为 multipart/* 的请求的解析器接口
+		initLocaleResolver(context); //本地化( 国际化 )解析器接口
+		initThemeResolver(context); //主题解析器接口
+		initHandlerMappings(context); //处理器匹配接口，根据请求( handler )获得其的处理器( handler )和拦截器们( HandlerInterceptor 数组 )
+		initHandlerAdapters(context); //处理器适配器接口
+		initHandlerExceptionResolvers(context); //处理器异常解析器接口，将处理器( handler )执行时发生的异常，解析( 转换 )成对应的 ModelAndView 结果
+		initRequestToViewNameTranslator(context); //请求到视图名的转换器接口
+		initViewResolvers(context); //实体解析器接口，根据视图名和国际化，获得最终的视图 View 对象
+		initFlashMapManager(context); //FlashMap 管理器接口，负责重定向时，保存参数到临时存储中
 	}
 
 	/**
@@ -592,6 +592,11 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * Initialize the HandlerMappings used by this class.
 	 * <p>If no HandlerMapping beans are defined in the BeanFactory for this namespace,
 	 * we default to BeanNameUrlHandlerMapping.
+	 *
+	 *
+	 * 如果只期望Spring MVC只加载指定的HandlerMapping，可以修改web.xml中的DispatcherServlet的初始化参数，
+	 * 将detectAllHandlerMappings的值设置为false。这样，Spring MVC就只会查找名为“handlerMapping”的bean，并作为当前系统的唯一的HandlerMapping
+	 *
 	 */
 	private void initHandlerMappings(ApplicationContext context) {
 		// 置空 handlerMappings
@@ -1043,6 +1048,7 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
+				// <4> 获得当前 handler 对应的 HandlerAdapter 对象
 				// Determine handler adapter for the current request.
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 

@@ -75,7 +75,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 		implements HandlerMapping, Ordered, BeanNameAware {
 
 	/**
-	 * 默认处理器
+	 * 默认处理器 这边使用的Object,子类实现的时候,使用HandlerMethod,HandlerExecutionChain等
 	 */
 	@Nullable
 	private Object defaultHandler;
@@ -86,7 +86,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	private UrlPathHelper urlPathHelper = new UrlPathHelper();
 
 	/**
-	 * 路径匹配器
+	 * Ant风格的Path匹配模式~  解决如/books/{id}场景
 	 */
 	private PathMatcher pathMatcher = new AntPathMatcher();
 
@@ -107,6 +107,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 */
 	private final List<HandlerInterceptor> adaptedInterceptors = new ArrayList<>();
 
+	// 跨域相关的配置~
 	@Nullable
 	private CorsConfigurationSource corsConfigurationSource;
 
@@ -319,6 +320,7 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 		// <2> 扫描已注册的 MappedInterceptor 的 Bean 们，添加到 mappedInterceptors 中
 		detectMappedInterceptors(this.adaptedInterceptors);
 		// <3> 将 interceptors 初始化成 HandlerInterceptor 类型，添加到 mappedInterceptors 中
+		// 如果是WebRequestInterceptor类型的拦截器  需要用WebRequestHandlerInterceptorAdapter进行包装适配
 		initInterceptors();
 	}
 
@@ -507,17 +509,22 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @return the HandlerExecutionChain (never {@code null})
 	 * @see #getAdaptedInterceptors()
 	 */
+	// 已经找到handler了，那就根据此构造一个请求链
+	// 这里主要是吧拦截器们给糅进来~  构成对指定请求的一个拦截器链
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
-		// 创建 HandlerExecutionChain 对象
+		// 小细节：因为handler本身也许就是个Chain，所以此处需要判断一下~
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
 				(HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
 
-		// 获得请求路径
+		// 此处就用到了urlPathHelper来解析request
+		// 如我的请求地址为：`http://localhost:8080/demo_war_war/api/v1/hello`  那么lookupPath=/api/v1/hello
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request, LOOKUP_PATH);
 		// 遍历 adaptedInterceptors 数组，获得请求匹配的拦截器
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
 			// 需要匹配，若路径匹配，则添加到 chain 中
 			if (interceptor instanceof MappedInterceptor) {
+				// 这里其实就能体现出MappedInterceptor的些许优势了：也就是它只有路径匹配上了才会拦截，没有匹配上的就不会拦截了，处理起来确实是更加的优雅些了~~~~
+				// 备注：MappedInterceptor可以设置includePatterns和excludePatterns等~~~~~
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;
 				if (mappedInterceptor.matches(lookupPath, this.pathMatcher)) {
 					chain.addInterceptor(mappedInterceptor.getInterceptor());

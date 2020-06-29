@@ -26,6 +26,9 @@ import org.springframework.util.ObjectUtils;
  *
  * @author Juergen Hoeller
  * @since 2.5
+ *
+ *
+ * BeanMetadataAttribute 是一个持有属性对和源的对象。
  */
 public class BeanMetadataAttribute implements BeanMetadataElement {
 

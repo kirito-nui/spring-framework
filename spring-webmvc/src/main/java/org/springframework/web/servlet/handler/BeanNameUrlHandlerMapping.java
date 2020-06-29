@@ -55,6 +55,8 @@ public class BeanNameUrlHandlerMapping extends AbstractDetectingUrlHandlerMappin
 	@Override
 	protected String[] determineUrlsForHandler(String beanName) {
 		List<String> urls = new ArrayList<>();
+		// 意思就是必须以/开头才行~~~~~~这算是一种约定吧~~~
+		// 这种方式和@WebServlet方式一毛一样~
 		if (beanName.startsWith("/")) {
 			urls.add(beanName);
 		}

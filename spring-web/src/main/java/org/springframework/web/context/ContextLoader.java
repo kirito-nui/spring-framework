@@ -133,6 +133,11 @@ public class ContextLoader {
 	private static final String DEFAULT_STRATEGIES_PATH = "ContextLoader.properties";
 
 
+	/**
+	 * 默认的配置 Properties 对象
+	 *
+	 * 从 {@link #DEFAULT_STRATEGIES_PATH} 中读取
+	 */
 	private static final Properties defaultStrategies;
 
 	static {

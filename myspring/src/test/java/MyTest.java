@@ -9,7 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 
 /**
  * @author xieyingheng
- * @title: Test
+ * @title: TestBeanWrapper
  * @projectName spring
  * @description: TODO
  * @date 2020-02-0610:41

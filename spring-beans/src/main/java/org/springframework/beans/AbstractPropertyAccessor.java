@@ -33,6 +33,8 @@ import org.springframework.lang.Nullable;
  * @since 2.0
  * @see #getPropertyValue
  * @see #setPropertyValue
+ *
+ * 默认 extractOldValueForEditor 和 autoGrowNestedPaths 都是 false，即不暴露旧值，也不支持嵌套注入时属性为 null 就自动创建对象。
  */
 public abstract class AbstractPropertyAccessor extends TypeConverterSupport implements ConfigurablePropertyAccessor {
 
@@ -41,6 +43,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 	private boolean autoGrowNestedPaths = false;
 
 
+	// PropertyEditor 使用时是否暴露修改前后值
 	@Override
 	public void setExtractOldValueForEditor(boolean extractOldValueForEditor) {
 		this.extractOldValueForEditor = extractOldValueForEditor;
@@ -51,6 +54,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 		return this.extractOldValueForEditor;
 	}
 
+	// 嵌套注入时当属性为 null 时是否自动生成对象
 	@Override
 	public void setAutoGrowNestedPaths(boolean autoGrowNestedPaths) {
 		this.autoGrowNestedPaths = autoGrowNestedPaths;

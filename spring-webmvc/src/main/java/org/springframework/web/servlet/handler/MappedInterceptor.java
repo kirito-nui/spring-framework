@@ -43,9 +43,11 @@ import org.springframework.web.servlet.ModelAndView;
  * @since 3.0
  *
  * 支持地址匹配的 HandlerInterceptor 实现类
+ * 它是个final类  所以不允许你直接使用继承的方式来扩展
  */
 public final class MappedInterceptor implements HandlerInterceptor {
 
+	// 可以看到它哥俩都是可以不用指定，可以为null的
 	/**
 	 * 匹配的路径
 	 */
@@ -63,6 +65,8 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	 */
 	private final HandlerInterceptor interceptor;
 
+	// 注意：该类允许你自己指定路径的匹配规则。但是Spring里，不管哪个上层服务，默认使用的都是Ant风格的匹配
+	// 并不是正则的匹配  所以效率上还是蛮高的~
 	/**
 	 * 路径匹配器
 	 */
@@ -111,7 +115,7 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	 */
 	public MappedInterceptor(@Nullable String[] includePatterns, @Nullable String[] excludePatterns,
 			WebRequestInterceptor interceptor) {
-
+		// 此处使用WebRequestHandlerInterceptorAdapter这个适配器~~~
 		this(includePatterns, excludePatterns, new WebRequestHandlerInterceptorAdapter(interceptor));
 	}
 
@@ -157,6 +161,8 @@ public final class MappedInterceptor implements HandlerInterceptor {
 	 * @param pathMatcher a path matcher for path pattern matching
 	 * @return {@code true} if the interceptor applies to the given request path
 	 */
+	// 原则：excludePatterns先执行，includePatterns后执行
+	// 如果excludePatterns执行完都木有匹配的，并且includePatterns是空的，那就返回true（这是个处理方式技巧~  对这种互斥的情况  这一步判断很关键~~~）
 	public boolean matches(String lookupPath, PathMatcher pathMatcher) {
 		PathMatcher pathMatcherToUse = (this.pathMatcher != null ? this.pathMatcher : pathMatcher);
 		// 先排重

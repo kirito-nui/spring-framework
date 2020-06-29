@@ -65,6 +65,9 @@ public class BeanWrapperImpl extends AbstractNestablePropertyAccessor implements
 	/**
 	 * Cached introspections results for this object, to prevent encountering
 	 * the cost of JavaBeans introspection every time.
+	 *
+	 *
+	 * JavaBean 的内省都是由 CachedIntrospectionResults 完成，通过 cachedIntrospectionResults 就可以获取对应属性的 PropertyDescriptor。
 	 */
 	@Nullable
 	private CachedIntrospectionResults cachedIntrospectionResults;
@@ -216,9 +219,11 @@ public class BeanWrapperImpl extends AbstractNestablePropertyAccessor implements
 		if (td == null) {
 			td = cachedIntrospectionResults.addTypeDescriptor(pd, new TypeDescriptor(property(pd)));
 		}
+		// 父类 AbstractNestablePropertyAccessor 进行类型转换
 		return convertForProperty(propertyName, null, value, td);
 	}
 
+	// Property 也是对 PropertyDescriptor 封装，在 Android 等环境中不存在 PropertyDescriptor 类
 	private Property property(PropertyDescriptor pd) {
 		GenericTypeAwarePropertyDescriptor gpd = (GenericTypeAwarePropertyDescriptor) pd;
 		return new Property(gpd.getBeanClass(), gpd.getReadMethod(), gpd.getWriteMethod(), gpd.getName());
@@ -261,10 +266,16 @@ public class BeanWrapperImpl extends AbstractNestablePropertyAccessor implements
 	}
 
 
+	/**
+	 *
+	 *BeanPropertyHandler 是 BeanWrapperImpl 的内部类，是对 PropertyDescriptor 的封装，完成对属性的各种操作
+	 *
+	 */
 	private class BeanPropertyHandler extends PropertyHandler {
 
 		private final PropertyDescriptor pd;
 
+		// PropertyHandler 是对 PropertyDescriptor 的封装，提供了对 JavaBean 底层的操作，如属性的读写
 		public BeanPropertyHandler(PropertyDescriptor pd) {
 			super(pd.getPropertyType(), pd.getReadMethod() != null, pd.getWriteMethod() != null);
 			this.pd = pd;

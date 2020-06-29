@@ -41,6 +41,18 @@ import org.springframework.web.util.UrlPathHelper;
  *
  * @author Rossen Stoyanchev
  * @since 3.1
+ *
+ *
+ *
+ *
+ *
+ * Spring MVC请求URL带后缀匹配的情况，如/hello.json也能匹配/hello
+ *  * RequestMappingInfoHandlerMapping 在处理http请求的时候， 如果 请求url 有后缀，如果找不到精确匹配的那个@RequestMapping方法。
+ *  *  那么，就把后缀去掉，然后.*去匹配，这样，一般都可以匹配，默认这个行为是被开启的。
+ *  *
+ *  * 比如有一个@RequestMapping("/rest"), 那么精确匹配的情况下， 只会匹配/rest请求。 但如果我前端发来一个 /rest.abcdef 这样的请求， 又没有配置 @RequestMapping("/rest.abcdef") 这样映射的情况下， 那么@RequestMapping("/rest") 就会生效。
+ *  *
+ *  *  这样会带来什么问题呢？绝大多数情况下是没有问题的，但是如果你是一个对权限要求非常严格的系统，强烈关闭此项功能，否则你会有意想不到的"收获"。
  */
 public final class PatternsRequestCondition extends AbstractRequestCondition<PatternsRequestCondition> {
 
@@ -214,11 +226,15 @@ public final class PatternsRequestCondition extends AbstractRequestCondition<Pat
 	@Override
 	@Nullable
 	public PatternsRequestCondition getMatchingCondition(HttpServletRequest request) {
+		// patterns表示此MappingInfo可以匹配的值们。一般对应@RequestMapping注解上的patters数组的值
 		if (this.patterns.isEmpty()) {
 			return this;
 		}
+		// 拿到待匹配的值，比如此处为"/hello.json"
 		String lookupPath = this.pathHelper.getLookupPathForRequest(request, HandlerMapping.LOOKUP_PATH);
+		// 最主要就是这个方法了，它拿着这个lookupPath匹配~~~~
 		List<String> matches = getMatchingPatterns(lookupPath);
+		// 此处如果为empty，就返回null了
 		return !matches.isEmpty() ? new PatternsRequestCondition(new LinkedHashSet<>(matches), this) : null;
 	}
 
@@ -233,6 +249,7 @@ public final class PatternsRequestCondition extends AbstractRequestCondition<Pat
 	public List<String> getMatchingPatterns(String lookupPath) {
 		List<String> matches = null;
 		for (String pattern : this.patterns) {
+			// 拿着lookupPath和pattern看它俩合拍不
 			String match = getMatchingPattern(pattern, lookupPath);
 			if (match != null) {
 				matches = matches != null ? matches : new ArrayList<>();
@@ -242,18 +259,27 @@ public final class PatternsRequestCondition extends AbstractRequestCondition<Pat
 		if (matches == null) {
 			return Collections.emptyList();
 		}
+		// 解释一下为何匹配的可能是多个。因为url匹配上了，但是还有可能@RequestMapping的其余属性匹配不上啊，所以此处需要注意  是可能匹配上多个的  最终是唯一匹配就成
 		if (matches.size() > 1) {
 			matches.sort(this.pathMatcher.getPatternComparator(lookupPath));
 		}
 		return matches;
 	}
 
+	// // ===============url的真正匹配规则  非常重要~~~===============
+	// 注意这个方法的取名，上面是负数，这里是单数~~~~命名规范也是有艺术感的
 	@Nullable
 	private String getMatchingPattern(String pattern, String lookupPath) {
+		// 完全相等，那就不继续聊了
 		if (pattern.equals(lookupPath)) {
 			return pattern;
 		}
+
+		// 注意了：useSuffixPatternMatch 这个属性就是我们最终要关闭后缀匹配的关键
+		// 这个值默外部给传的true（其实内部默认值是boolean类型为false）
 		if (this.useSuffixPatternMatch) {
+
+			// 这个意思是若useSuffixPatternMatch=true我们支持后缀匹配。我们还可以配置fileExtensions让只支持我们自定义的指定的后缀匹配，而不是下面最终的.*全部支持
 			if (!this.fileExtensions.isEmpty() && lookupPath.indexOf('.') != -1) {
 				for (String extension : this.fileExtensions) {
 					if (this.pathMatcher.match(pattern + extension, lookupPath)) {
@@ -261,6 +287,7 @@ public final class PatternsRequestCondition extends AbstractRequestCondition<Pat
 					}
 				}
 			}
+			// 若你没有配置指定后缀匹配，并且你的handler也没有.*这样匹配的，那就默认你的pattern就给你添加上后缀".*"，表示匹配所有请求的url的后缀
 			else {
 				boolean hasSuffix = pattern.indexOf('.') != -1;
 				if (!hasSuffix && this.pathMatcher.match(pattern + ".*", lookupPath)) {
@@ -268,14 +295,35 @@ public final class PatternsRequestCondition extends AbstractRequestCondition<Pat
 				}
 			}
 		}
+		// 若匹配上了 直接返回此patter
 		if (this.pathMatcher.match(pattern, lookupPath)) {
 			return pattern;
 		}
+		// 这又是它支持的匹配规则。默认useTrailingSlashMatch它也是true
+		// 这就是为何我们的/hello/也能匹配上/hello的原因
+		// 从这可以看出，Spring MVC的宽容度是很高的，容错处理做得是非常不错的
 		if (this.useTrailingSlashMatch) {
 			if (!pattern.endsWith("/") && this.pathMatcher.match(pattern + "/", lookupPath)) {
 				return pattern + "/";
 			}
 		}
+		/**
+		 * 分析了URL的匹配原因，现在肯定知道为何默认情况下"/hello.aaaa"或者"/hello.aaaa/“或者”"/hello/""能匹配上我们/hello的原因了吧
+		 * Spring和SpringBoot中如何关闭此项功能呢？
+		 * 为何要关闭的理由，上面其实已经说了。当我们涉及到严格的权限校验（强权限控制）的时候。特备是一些银行系统、资产系统等等，关闭后缀匹配事非常有必要的。
+		 *
+		 * @Configuration
+		 * @EnableWebMvc
+		 * public class WebMvcConfig extends WebMvcConfigurerAdapter {
+		 *
+		 *     // 关闭后缀名匹配，关闭最后一个/匹配
+		 *     @Override
+		 *     public void configurePathMatch(PathMatchConfigurer configurer) {
+		 *         configurer.setUseSuffixPatternMatch(false);
+		 *         configurer.setUseTrailingSlashMatch(false);
+		 *     }
+		 * }
+		 */
 		return null;
 	}
 

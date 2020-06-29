@@ -35,7 +35,7 @@ import org.springframework.lang.Nullable;
 public interface PropertyAccessor {
 
 	/**
-	 * Path separator for nested properties.
+	 * Path separator for nested properties. 用于嵌套属性的路径分隔符。
 	 * Follows normal Java conventions: getFoo().getBar() would be "foo.bar".
 	 */
 	String NESTED_PROPERTY_SEPARATOR = ".";

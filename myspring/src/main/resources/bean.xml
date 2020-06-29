@@ -54,6 +54,13 @@
             <constructor-arg index="1" value="20"/>
         </bean>
 
+	<bean id="testControllerA" class="com.ying.SimpleHandlerMapping.TestControllerA">
+	</bean>
+	<bean id="testControllerB" class="com.ying.SimpleHandlerMapping.TestControllerB">
+	</bean>
+	<bean id="testControllerC" class="com.ying.SimpleHandlerMapping.TestControllerC">
+	</bean>
+
 	<!--<bean id="testAop" class="com.ying.aop.TestAop"/>-->
 	<!--<bean id="aopCode" class="com.ying.aop.AopCode"/>-->
 	<!--<aop:config>-->

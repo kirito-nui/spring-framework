@@ -54,6 +54,11 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
  *
  * 处理器匹配接口，根据请求( handler )获得其的处理器( handler )和拦截器们( HandlerInterceptor 数组 )
+ *
+ *
+ * 	 HandlerMapping并没有规定这个URL与应用的处理类如何映射。
+ * 	 所以在HandlerMapping接口中仅仅定义了根据一个URL必须返回一个由HandlerExecutionChain代表的处理链，
+ * 	 我们可以在这个处理链中添加任意的HandlerAdapter实例来处理这个URL对应的请求（这样保证了最大的灵活性映射关系）
  */
 public interface HandlerMapping {
 

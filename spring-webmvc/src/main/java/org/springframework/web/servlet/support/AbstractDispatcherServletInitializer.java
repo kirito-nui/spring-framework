@@ -49,6 +49,9 @@ import org.springframework.web.servlet.FrameworkServlet;
  * @author Juergen Hoeller
  * @author Stephane Nicoll
  * @since 3.2
+ *
+ *
+ * AbstractDispatcherServletInitializer#registerDispatcherServlet 便是无 web.xml 前提下创建 DispatcherServlet 的关键代码
  */
 public abstract class AbstractDispatcherServletInitializer extends AbstractContextLoaderInitializer {
 
@@ -60,8 +63,9 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
+		// 调用父类启动的逻辑
 		super.onStartup(servletContext);
-		// 注册 DispacherServlt
+		// 注册 DispatcherServlet
 		registerDispatcherServlet(servletContext);
 	}
 

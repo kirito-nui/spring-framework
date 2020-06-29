@@ -3,9 +3,13 @@ package com.ying.entiy;
 import lombok.Data;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.context.weaving.LoadTimeWeaverAware;
 import org.springframework.instrument.classloading.LoadTimeWeaver;
 import org.springframework.stereotype.Component;
+
+import javax.xml.ws.spi.Invoker;
 
 /**
  * @author xieyingheng
@@ -16,7 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Data
-public class Codes implements BeanNameAware, LoadTimeWeaverAware, InitializingBean {
+public class Codes implements BeanNameAware, LoadTimeWeaverAware, InitializingBean, SmartInitializingSingleton, SmartLifecycle {
 
 	private String beanName;
 
@@ -99,5 +103,25 @@ public class Codes implements BeanNameAware, LoadTimeWeaverAware, InitializingBe
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		System.out.println("invoke afterPropertiesSet()");
+	}
+
+	@Override
+	public void afterSingletonsInstantiated() {
+		System.out.println("invoke afterSingletonsInstantiated");
+	}
+
+	@Override
+	public void start() {
+		System.out.println("invoke start()");
+	}
+
+	@Override
+	public void stop() {
+		System.out.println("Invoker stop()");
+	}
+
+	@Override
+	public boolean isRunning() {
+		return false;
 	}
 }

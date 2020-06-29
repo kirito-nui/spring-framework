@@ -34,6 +34,9 @@ import org.springframework.lang.Nullable;
  * @since 2.0
  * @see SimpleTypeConverter
  * @see BeanWrapperImpl
+ *
+ *
+ * 类型转换，其主要的工作由 TypeConverterDelegate 这个类完成的。
  */
 public interface TypeConverter {
 
@@ -51,6 +54,8 @@ public interface TypeConverter {
 	 * @see org.springframework.core.convert.ConversionService
 	 * @see org.springframework.core.convert.converter.Converter
 	 */
+
+	// 1. value 转换成 requiredType
 	@Nullable
 	<T> T convertIfNecessary(@Nullable Object value, @Nullable Class<T> requiredType) throws TypeMismatchException;
 
@@ -70,6 +75,8 @@ public interface TypeConverter {
 	 * @see org.springframework.core.convert.ConversionService
 	 * @see org.springframework.core.convert.converter.Converter
 	 */
+
+	// 2. methodParam 同下
 	@Nullable
 	<T> T convertIfNecessary(@Nullable Object value, @Nullable Class<T> requiredType,
 			@Nullable MethodParameter methodParam) throws TypeMismatchException;
@@ -90,6 +97,8 @@ public interface TypeConverter {
 	 * @see org.springframework.core.convert.ConversionService
 	 * @see org.springframework.core.convert.converter.Converter
 	 */
+	// 3. field 是 value 转换成 requiredType 后需要赋值的 field 字段
+	//    可以从该 field 字段拿到其泛型信息，从而进一步判断是否可以转换，毕竟 requiredType 只有 Class 信息
 	@Nullable
 	<T> T convertIfNecessary(@Nullable Object value, @Nullable Class<T> requiredType, @Nullable Field field)
 			throws TypeMismatchException;

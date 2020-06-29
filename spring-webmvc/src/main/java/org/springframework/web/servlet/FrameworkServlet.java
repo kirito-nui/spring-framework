@@ -583,7 +583,7 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 					if (cwac.getParent() == null) {
 						// The context instance was injected without an explicit parent -> set
 						// the root application context (if any; may be null) as the parent
-						cwac.setParent(rootContext);
+						cwac.setParent(rootContext); //org/springframework/web/context/ContextLoader.java:307
 					}
 					// 配置和初始化 wac
 					configureAndRefreshWebApplicationContext(cwac);
@@ -636,9 +636,11 @@ public abstract class FrameworkServlet extends HttpServletBean implements Applic
 	@Nullable
 	protected WebApplicationContext findWebApplicationContext() {
 		String attrName = getContextAttribute();
+		// 需要配置了 contextAttribute 属性下，才会去查找
 		if (attrName == null) {
 			return null;
 		}
+		// 从 ServletContext 中，获得属性名对应的 WebApplicationContext 对象
 		WebApplicationContext wac =
 				WebApplicationContextUtils.getWebApplicationContext(getServletContext(), attrName);
 		if (wac == null) {
