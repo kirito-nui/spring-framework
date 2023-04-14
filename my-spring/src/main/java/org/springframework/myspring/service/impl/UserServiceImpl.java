@@ -1,6 +1,6 @@
 package org.springframework.myspring.service.impl;
 
-import org.springframework.service.UserService;
+import org.springframework.myspring.service.UserService;
 import org.springframework.stereotype.Service;
 
 /**

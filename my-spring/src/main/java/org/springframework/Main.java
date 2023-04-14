@@ -9,6 +9,8 @@ public class Main {
 
 		AnnotationConfigApplicationContext context =
 				new AnnotationConfigApplicationContext(Main.class);
+//		AnnotationConfigApplicationContext context =
+//				new AnnotationConfigApplicationContext("org.springframework.myspring");
 		for (String beanDefinitionName : context.getBeanDefinitionNames()) {
 			System.out.println(beanDefinitionName);
 		}
