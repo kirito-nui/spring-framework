@@ -798,9 +798,9 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 
 		Path rootPathForPattern = rootPath;
 		String resourcePattern = rootDir + StringUtils.cleanPath(subPattern);
-		Predicate<Path> isMatchingFile = path -> (!path.equals(rootPathForPattern) &&
-				getPathMatcher().match(resourcePattern, StringUtils.cleanPath(path.toString())));
-
+//		Predicate<Path> isMatchingFile = path -> (!path.equals(rootPathForPattern) &&
+//				getPathMatcher().match(resourcePattern, StringUtils.cleanPath(path.toString())));
+		Predicate<Path> isMatchingFile = new MyPathPredicate(rootPathForPattern, getPathMatcher(), resourcePattern);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Searching directory [%s] for files matching pattern [%s]"
 					.formatted(rootPath.toAbsolutePath(), subPattern));
@@ -819,6 +819,23 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		return result;
 	}
 
+	static class MyPathPredicate implements Predicate<Path> {
+		private final Path rootPathForPattern;
+		private final PathMatcher pathMatcher;
+		private final String resourcePattern;
+
+		public MyPathPredicate(Path rootPathForPattern, PathMatcher pathMatcher, String resourcePattern) {
+			this.rootPathForPattern = rootPathForPattern;
+			this.pathMatcher = pathMatcher;
+			this.resourcePattern = resourcePattern;
+		}
+
+		@Override
+		public boolean test(Path path) {
+			String cleanPath = StringUtils.cleanPath(path.toString());
+			return !path.equals(rootPathForPattern) && pathMatcher.match(resourcePattern, cleanPath);
+		}
+	}
 	/**
 	 * Resolve the given location pattern into {@code Resource} objects for all
 	 * matching resources found in the module path.
