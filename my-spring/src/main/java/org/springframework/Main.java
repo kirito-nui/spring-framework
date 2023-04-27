@@ -27,6 +27,7 @@ public class Main {
 		for (String beanDefinitionName : context.getBeanDefinitionNames()) {
 			System.out.println(beanDefinitionName);
 		}
+		UserService userService = context.getBean(UserService.class);
 		UserService userServiceImpl = (UserService) context.getBean("userServiceImpl");
 		userServiceImpl.getThreadPool();
 		System.out.println(321);
