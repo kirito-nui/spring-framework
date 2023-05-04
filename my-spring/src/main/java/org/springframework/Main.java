@@ -1,20 +1,25 @@
 package org.springframework;
 
-import org.springframework.context.annotation.AnnotatedBeanDefinitionReader;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.myspring.bean.User;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.myspring.service.UserService;
-import org.springframework.myspring.service.impl.OrderServiceImpl;
-import org.springframework.myspring.service.impl.UserServiceImpl;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @ComponentScan(value = "org.springframework.myspring.*", excludeFilters = {})
 @EnableAsync
+@PropertySource(value = "classpath:application.properties")
+@Data
 public class Main {
+
+	@Value("${name}")
+	String name;
+
 	public static void main(String[] args) {
+
+
 
 		AnnotationConfigApplicationContext context =
 				new AnnotationConfigApplicationContext(Main.class);
@@ -30,6 +35,9 @@ public class Main {
 		UserService userService = context.getBean(UserService.class);
 		UserService userServiceImpl = (UserService) context.getBean("userServiceImpl");
 		userServiceImpl.getThreadPool();
+		Main main = new Main();
+		System.out.println(main.name);
 		System.out.println(321);
+
 	}
 }
