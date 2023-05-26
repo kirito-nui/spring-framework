@@ -1,8 +1,10 @@
 package org.springframework;
 
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.myspring.config.UserConfig;
 import org.springframework.myspring.service.UserService;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -10,8 +12,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ComponentScan(value = "org.springframework.myspring.*", excludeFilters = {})
 @EnableAsync
 @PropertySource(value = "classpath:application.properties")
-public class Main {
+public class Main{
 
+
+	private Environment environment;
 	public static void main(String[] args) {
 
 
@@ -30,9 +34,12 @@ public class Main {
 		UserService userService = context.getBean(UserService.class);
 		UserService userServiceImpl = (UserService) context.getBean("userServiceImpl");
 		UserConfig userConfig = (UserConfig) context.getBean("userConfig");
-		userServiceImpl.getThreadPool();
+		String name = userServiceImpl.getName();
+//		userServiceImpl.getThreadPool();
 		System.out.println(userConfig.getName());
+		System.out.println(name);
 		System.out.println(321);
 
 	}
+
 }
