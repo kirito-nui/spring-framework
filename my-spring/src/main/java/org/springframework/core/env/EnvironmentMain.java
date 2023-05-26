@@ -1,9 +1,6 @@
-package org.springframework;
+package org.springframework.core.env;
 
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.DefaultPropertySourceFactory;
@@ -43,6 +40,8 @@ public class EnvironmentMain {
 			propertySource = factory.createPropertySource(null, new EncodedResource(resource, (String) null));
 			propertySources.addLast(propertySource);
 		}
+		Environment environment = new StandardEnvironment(propertySources);
+		Integer age = environment.getProperty("age", Integer.TYPE);
 		System.out.println();
 	}
 }
