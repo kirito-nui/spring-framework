@@ -16,14 +16,12 @@
 
 package org.springframework.aot.hint;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -55,6 +53,28 @@ class BindingReflectionHintsRegistrarTests {
 		assertThat(this.hints.reflection().typeHints()).singleElement()
 				.satisfies(typeHint -> {
 					assertThat(typeHint.getType()).isEqualTo(TypeReference.of(SampleEmptyClass.class));
+					assertThat(typeHint.getMemberCategories()).containsExactlyInAnyOrder(
+							MemberCategory.DECLARED_FIELDS, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					assertThat(typeHint.constructors()).isEmpty();
+					assertThat(typeHint.fields()).isEmpty();
+					assertThat(typeHint.methods()).isEmpty();
+				});
+	}
+
+	@Test
+	void registerTypeForSerializationWithExtendingClass() {
+		bindingRegistrar.registerReflectionHints(this.hints.reflection(), SampleExtendingClass.class);
+		assertThat(this.hints.reflection().typeHints()).satisfiesExactlyInAnyOrder(
+				typeHint -> {
+					assertThat(typeHint.getType()).isEqualTo(TypeReference.of(SampleEmptyClass.class));
+					assertThat(typeHint.getMemberCategories()).containsExactlyInAnyOrder(
+							MemberCategory.DECLARED_FIELDS, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+					assertThat(typeHint.constructors()).isEmpty();
+					assertThat(typeHint.fields()).isEmpty();
+					assertThat(typeHint.methods()).isEmpty();
+				},
+				typeHint -> {
+					assertThat(typeHint.getType()).isEqualTo(TypeReference.of(SampleExtendingClass.class));
 					assertThat(typeHint.getMemberCategories()).containsExactlyInAnyOrder(
 							MemberCategory.DECLARED_FIELDS, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
 					assertThat(typeHint.constructors()).isEmpty();
@@ -207,8 +227,8 @@ class BindingReflectionHintsRegistrarTests {
 	@Test
 	void registerTypeForSerializationWithEnum() {
 		bindingRegistrar.registerReflectionHints(this.hints.reflection(), SampleEnum.class);
-		assertThat(this.hints.reflection().typeHints()).singleElement()
-				.satisfies(typeHint -> assertThat(typeHint.getType()).isEqualTo(TypeReference.of(SampleEnum.class)));
+		assertThat(RuntimeHintsPredicates.reflection().onType(SampleEnum.class).withMemberCategories(
+				MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS, MemberCategory.INVOKE_PUBLIC_METHODS)).accepts(this.hints);
 	}
 
 	@Test
@@ -282,6 +302,9 @@ class BindingReflectionHintsRegistrarTests {
 
 
 	static class SampleEmptyClass {
+	}
+
+	static class SampleExtendingClass extends SampleEmptyClass {
 	}
 
 	static class SampleClassWithNoProperty {
@@ -418,7 +441,7 @@ class BindingReflectionHintsRegistrarTests {
 		}
 
 		@Override
-		public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+		public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) {
 			return null;
 		}
 	}
@@ -431,7 +454,7 @@ class BindingReflectionHintsRegistrarTests {
 		}
 
 		@Override
-		public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+		public LocalDate deserialize(JsonParser p, DeserializationContext ctxt) {
 			return null;
 		}
 	}

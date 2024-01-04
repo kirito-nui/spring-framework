@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Juergen Hoeller
  * @author Chris Beams
  */
-public class CommonAnnotationBeanPostProcessorTests {
+class CommonAnnotationBeanPostProcessorTests {
 
 	@Test
-	public void testPostConstructAndPreDestroy() {
+	void testPostConstructAndPreDestroy() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		bf.addBeanPostProcessor(new CommonAnnotationBeanPostProcessor());
 		bf.registerBeanDefinition("annotatedBean", new RootBeanDefinition(AnnotatedInitDestroyBean.class));
@@ -64,7 +64,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testPostConstructAndPreDestroyWithPostProcessor() {
+	void testPostConstructAndPreDestroyWithPostProcessor() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		bf.addBeanPostProcessor(new InitDestroyBeanPostProcessor());
 		bf.addBeanPostProcessor(new CommonAnnotationBeanPostProcessor());
@@ -77,7 +77,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testPostConstructAndPreDestroyWithApplicationContextAndPostProcessor() {
+	void testPostConstructAndPreDestroyWithApplicationContextAndPostProcessor() {
 		GenericApplicationContext ctx = new GenericApplicationContext();
 		ctx.registerBeanDefinition("bpp1", new RootBeanDefinition(InitDestroyBeanPostProcessor.class));
 		ctx.registerBeanDefinition("bpp2", new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class));
@@ -91,7 +91,19 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testPostConstructAndPreDestroyWithManualConfiguration() {
+	void testPostConstructAndPreDestroyWithLegacyAnnotations() {
+		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+		bf.addBeanPostProcessor(new CommonAnnotationBeanPostProcessor());
+		bf.registerBeanDefinition("annotatedBean", new RootBeanDefinition(LegacyAnnotatedInitDestroyBean.class));
+
+		LegacyAnnotatedInitDestroyBean bean = (LegacyAnnotatedInitDestroyBean) bf.getBean("annotatedBean");
+		assertThat(bean.initCalled).isTrue();
+		bf.destroySingletons();
+		assertThat(bean.destroyCalled).isTrue();
+	}
+
+	@Test
+	void testPostConstructAndPreDestroyWithManualConfiguration() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		InitDestroyAnnotationBeanPostProcessor bpp = new InitDestroyAnnotationBeanPostProcessor();
 		bpp.setInitAnnotationType(PostConstruct.class);
@@ -106,7 +118,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testPostProcessorWithNullBean() {
+	void testPostProcessorWithNullBean() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		bf.addBeanPostProcessor(new CommonAnnotationBeanPostProcessor());
 		RootBeanDefinition rbd = new RootBeanDefinition(NullFactory.class);
@@ -118,7 +130,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testSerialization() throws Exception {
+	void testSerialization() throws Exception {
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		CommonAnnotationBeanPostProcessor bpp2 = SerializationTestUtils.serializeAndDeserialize(bpp);
 
@@ -128,7 +140,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testSerializationWithManualConfiguration() throws Exception {
+	void testSerializationWithManualConfiguration() throws Exception {
 		InitDestroyAnnotationBeanPostProcessor bpp = new InitDestroyAnnotationBeanPostProcessor();
 		bpp.setInitAnnotationType(PostConstruct.class);
 		bpp.setDestroyAnnotationType(PreDestroy.class);
@@ -140,7 +152,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjection() {
+	void testResourceInjection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setResourceFactory(bf);
@@ -164,7 +176,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjectionWithPrototypes() {
+	void testResourceInjectionWithPrototypes() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setResourceFactory(bf);
@@ -201,7 +213,31 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjectionWithResolvableDependencyType() {
+	void testResourceInjectionWithLegacyAnnotations() {
+		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
+		bpp.setResourceFactory(bf);
+		bf.addBeanPostProcessor(bpp);
+		bf.registerBeanDefinition("annotatedBean", new RootBeanDefinition(LegacyResourceInjectionBean.class));
+		TestBean tb = new TestBean();
+		bf.registerSingleton("testBean", tb);
+		TestBean tb2 = new TestBean();
+		bf.registerSingleton("testBean2", tb2);
+
+		LegacyResourceInjectionBean bean = (LegacyResourceInjectionBean) bf.getBean("annotatedBean");
+		assertThat(bean.initCalled).isTrue();
+		assertThat(bean.init2Called).isTrue();
+		assertThat(bean.init3Called).isTrue();
+		assertThat(bean.getTestBean()).isSameAs(tb);
+		assertThat(bean.getTestBean2()).isSameAs(tb2);
+		bf.destroySingletons();
+		assertThat(bean.destroyCalled).isTrue();
+		assertThat(bean.destroy2Called).isTrue();
+		assertThat(bean.destroy3Called).isTrue();
+	}
+
+	@Test
+	void testResourceInjectionWithResolvableDependencyType() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -237,7 +273,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjectionWithDefaultMethod() {
+	void testResourceInjectionWithDefaultMethod() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -257,7 +293,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjectionWithTwoProcessors() {
+	void testResourceInjectionWithTwoProcessors() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setResourceFactory(bf);
@@ -282,7 +318,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testResourceInjectionFromJndi() {
+	void testResourceInjectionFromJndi() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		SimpleJndiBeanFactory resourceFactory = new SimpleJndiBeanFactory();
@@ -307,7 +343,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testExtendedResourceInjection() {
+	void testExtendedResourceInjection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -360,7 +396,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testExtendedResourceInjectionWithOverriding() {
+	void testExtendedResourceInjectionWithOverriding() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -417,7 +453,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testExtendedEjbInjection() {
+	void testExtendedEjbInjection() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -454,7 +490,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testLazyResolutionWithResourceField() {
+	void testLazyResolutionWithResourceField() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -472,7 +508,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testLazyResolutionWithResourceMethod() {
+	void testLazyResolutionWithResourceMethod() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -490,7 +526,7 @@ public class CommonAnnotationBeanPostProcessorTests {
 	}
 
 	@Test
-	public void testLazyResolutionWithCglibProxy() {
+	void testLazyResolutionWithCglibProxy() {
 		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
 		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(bf);
@@ -504,6 +540,25 @@ public class CommonAnnotationBeanPostProcessorTests {
 		bean.testBean.setName("notLazyAnymore");
 		assertThat(bf.containsSingleton("testBean")).isTrue();
 		TestBean tb = (TestBean) bf.getBean("testBean");
+		assertThat(tb.getName()).isEqualTo("notLazyAnymore");
+	}
+
+	@Test
+	void testLazyResolutionWithFallbackTypeMatch() {
+		DefaultListableBeanFactory bf = new DefaultListableBeanFactory();
+		bf.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
+		CommonAnnotationBeanPostProcessor bpp = new CommonAnnotationBeanPostProcessor();
+		bpp.setBeanFactory(bf);
+		bf.addBeanPostProcessor(bpp);
+
+		bf.registerBeanDefinition("annotatedBean", new RootBeanDefinition(LazyResourceCglibInjectionBean.class));
+		bf.registerBeanDefinition("tb", new RootBeanDefinition(TestBean.class));
+
+		LazyResourceCglibInjectionBean bean = (LazyResourceCglibInjectionBean) bf.getBean("annotatedBean");
+		assertThat(bf.containsSingleton("tb")).isFalse();
+		bean.testBean.setName("notLazyAnymore");
+		assertThat(bf.containsSingleton("tb")).isTrue();
+		TestBean tb = (TestBean) bf.getBean("tb");
 		assertThat(tb.getName()).isEqualTo("notLazyAnymore");
 	}
 
@@ -523,6 +578,30 @@ public class CommonAnnotationBeanPostProcessorTests {
 		}
 
 		@PreDestroy
+		private void destroy() {
+			if (this.destroyCalled) {
+				throw new IllegalStateException("Already called");
+			}
+			this.destroyCalled = true;
+		}
+	}
+
+
+	public static class LegacyAnnotatedInitDestroyBean {
+
+		public boolean initCalled = false;
+
+		public boolean destroyCalled = false;
+
+		@javax.annotation.PostConstruct
+		private void init() {
+			if (this.initCalled) {
+				throw new IllegalStateException("Already called");
+			}
+			this.initCalled = true;
+		}
+
+		@javax.annotation.PreDestroy
 		private void destroy() {
 			if (this.destroyCalled) {
 				throw new IllegalStateException("Already called");
@@ -624,6 +703,83 @@ public class CommonAnnotationBeanPostProcessorTests {
 		}
 
 		@Resource
+		public void setTestBean2(TestBean testBean2) {
+			if (this.testBean2 != null) {
+				throw new IllegalStateException("Already called");
+			}
+			this.testBean2 = testBean2;
+		}
+
+		public TestBean getTestBean() {
+			return testBean;
+		}
+
+		public TestBean getTestBean2() {
+			return testBean2;
+		}
+	}
+
+
+	public static class LegacyResourceInjectionBean extends LegacyAnnotatedInitDestroyBean {
+
+		public boolean init2Called = false;
+
+		public boolean init3Called = false;
+
+		public boolean destroy2Called = false;
+
+		public boolean destroy3Called = false;
+
+		@javax.annotation.Resource
+		private TestBean testBean;
+
+		private TestBean testBean2;
+
+		@javax.annotation.PostConstruct
+		protected void init2() {
+			if (this.testBean == null || this.testBean2 == null) {
+				throw new IllegalStateException("Resources not injected");
+			}
+			if (!this.initCalled) {
+				throw new IllegalStateException("Superclass init method not called yet");
+			}
+			if (this.init2Called) {
+				throw new IllegalStateException("Already called");
+			}
+			this.init2Called = true;
+		}
+
+		@javax.annotation.PostConstruct
+		private void init() {
+			if (this.init3Called) {
+				throw new IllegalStateException("Already called");
+			}
+			this.init3Called = true;
+		}
+
+		@javax.annotation.PreDestroy
+		protected void destroy2() {
+			if (this.destroyCalled) {
+				throw new IllegalStateException("Superclass destroy called too soon");
+			}
+			if (this.destroy2Called) {
+				throw new IllegalStateException("Already called");
+			}
+			this.destroy2Called = true;
+		}
+
+		@javax.annotation.PreDestroy
+		private void destroy() {
+			if (this.destroyCalled) {
+				throw new IllegalStateException("Superclass destroy called too soon");
+			}
+			if (this.destroy3Called) {
+				throw new IllegalStateException("Already called");
+			}
+			this.destroy3Called = true;
+		}
+
+		@javax.annotation.Resource
 		public void setTestBean2(TestBean testBean2) {
 			if (this.testBean2 != null) {
 				throw new IllegalStateException("Already called");

@@ -354,8 +354,8 @@ public class ProxyFactoryTests {
 		list.add(proxy1);
 		list.add(proxy2);
 		AnnotationAwareOrderComparator.sort(list);
-		assertThat(list.get(0)).isSameAs(proxy2);
-		assertThat(list.get(1)).isSameAs(proxy1);
+		assertThat(list).element(0).isSameAs(proxy2);
+		assertThat(list).element(1).isSameAs(proxy1);
 	}
 
 	@Test
@@ -370,8 +370,8 @@ public class ProxyFactoryTests {
 		list.add(proxy1);
 		list.add(proxy2);
 		AnnotationAwareOrderComparator.sort(list);
-		assertThat(list.get(0)).isSameAs(proxy2);
-		assertThat(list.get(1)).isSameAs(proxy1);
+		assertThat(list).element(0).isSameAs(proxy2);
+		assertThat(list).element(1).isSameAs(proxy1);
 	}
 
 	@Test
@@ -389,7 +389,9 @@ public class ProxyFactoryTests {
 		CharSequence target = "test";
 		ProxyFactory pf = new ProxyFactory(target);
 		ClassLoader cl = target.getClass().getClassLoader();
-		assertThat(((CharSequence) pf.getProxy(cl)).toString()).isEqualTo(target);
+		CharSequence proxy = (CharSequence) pf.getProxy(cl);
+		assertThat(proxy.toString()).isEqualTo(target);
+		assertThat(pf.getProxyClass(cl)).isSameAs(proxy.getClass());
 	}
 
 	@Test
@@ -398,7 +400,9 @@ public class ProxyFactoryTests {
 		ProxyFactory pf = new ProxyFactory(target);
 		pf.setProxyTargetClass(true);
 		ClassLoader cl = target.getClass().getClassLoader();
-		assertThat(((Date) pf.getProxy(cl)).getTime()).isEqualTo(target.getTime());
+		Date proxy = (Date) pf.getProxy(cl);
+		assertThat(proxy.getTime()).isEqualTo(target.getTime());
+		assertThat(pf.getProxyClass(cl)).isSameAs(proxy.getClass());
 	}
 
 	@Test
@@ -415,7 +419,9 @@ public class ProxyFactoryTests {
 		};
 		ProxyFactory pf = new ProxyFactory(target);
 		ClassLoader cl = Savepoint.class.getClassLoader();
-		assertThat(((Savepoint) pf.getProxy(cl)).getSavepointName()).isEqualTo("sp");
+		Savepoint proxy = (Savepoint) pf.getProxy(cl);
+		assertThat(proxy.getSavepointName()).isEqualTo("sp");
+		assertThat(pf.getProxyClass(cl)).isSameAs(proxy.getClass());
 	}
 
 

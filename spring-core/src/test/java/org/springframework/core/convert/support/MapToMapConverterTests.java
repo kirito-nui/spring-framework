@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Keith Donald
- * @author Phil Webb
+ * @author Phillip Webb
  * @author Juergen Hoeller
  */
 class MapToMapConverterTests {
@@ -47,7 +47,7 @@ class MapToMapConverterTests {
 
 
 	@BeforeEach
-	void setUp() {
+	void setup() {
 		conversionService.addConverter(new MapToMapConverter(conversionService));
 	}
 
@@ -72,13 +72,13 @@ class MapToMapConverterTests {
 		assertThat(conversionService.canConvert(sourceType, targetType)).isTrue();
 		@SuppressWarnings("unchecked")
 		Map<Integer, Integer> result = (Map<Integer, Integer>) conversionService.convert(map, sourceType, targetType);
-		assertThat(map.equals(result)).isFalse();
+		assertThat(map).isNotEqualTo(result);
 		assertThat((int) result.get(1)).isEqualTo(9);
 		assertThat((int) result.get(2)).isEqualTo(37);
 	}
 
 	@Test
-	void scalarMapNotGenericTarget() throws Exception {
+	void scalarMapNotGenericTarget() {
 		Map<String, String> map = new HashMap<>();
 		map.put("1", "9");
 		map.put("2", "37");
@@ -107,7 +107,7 @@ class MapToMapConverterTests {
 		assertThat(conversionService.canConvert(sourceType, targetType)).isTrue();
 		@SuppressWarnings("unchecked")
 		Map<Integer, Integer> result = (Map<Integer, Integer>) conversionService.convert(map, sourceType, targetType);
-		assertThat(map.equals(result)).isFalse();
+		assertThat(map).isNotEqualTo(result);
 		assertThat((int) result.get(1)).isEqualTo(9);
 		assertThat((int) result.get(2)).isEqualTo(37);
 	}
@@ -133,7 +133,7 @@ class MapToMapConverterTests {
 		assertThat(conversionService.canConvert(sourceType, targetType)).isTrue();
 		@SuppressWarnings("unchecked")
 		Map<Integer, List<Integer>> result = (Map<Integer, List<Integer>>) conversionService.convert(map, sourceType, targetType);
-		assertThat(map.equals(result)).isFalse();
+		assertThat(map).isNotEqualTo(result);
 		assertThat(result.get(1)).isEqualTo(Arrays.asList(9, 12));
 		assertThat(result.get(2)).isEqualTo(Arrays.asList(37, 23));
 	}
@@ -155,13 +155,13 @@ class MapToMapConverterTests {
 		assertThat(conversionService.canConvert(sourceType, targetType)).isTrue();
 		@SuppressWarnings("unchecked")
 		Map<Integer, List<Integer>> result = (Map<Integer, List<Integer>>) conversionService.convert(map, sourceType, targetType);
-		assertThat(map.equals(result)).isFalse();
+		assertThat(map).isNotEqualTo(result);
 		assertThat(result.get(1)).isEqualTo(Arrays.asList(9, 12));
 		assertThat(result.get(2)).isEqualTo(Arrays.asList(37, 23));
 	}
 
 	@Test
-	void collectionMapNotGenericTarget() throws Exception {
+	void collectionMapNotGenericTarget() {
 		Map<String, List<String>> map = new HashMap<>();
 		map.put("1", Arrays.asList("9", "12"));
 		map.put("2", Arrays.asList("37", "23"));
@@ -171,7 +171,7 @@ class MapToMapConverterTests {
 	}
 
 	@Test
-	void collectionMapNotGenericTargetCollectionToObjectInteraction() throws Exception {
+	void collectionMapNotGenericTargetCollectionToObjectInteraction() {
 		Map<String, List<String>> map = new HashMap<>();
 		map.put("1", Arrays.asList("9", "12"));
 		map.put("2", Arrays.asList("37", "23"));
@@ -193,7 +193,7 @@ class MapToMapConverterTests {
 	}
 
 	@Test
-	void emptyMapNoTargetGenericInfo() throws Exception {
+	void emptyMapNoTargetGenericInfo() {
 		Map<String, String> map = new HashMap<>();
 
 		assertThat(conversionService.canConvert(Map.class, Map.class)).isTrue();
@@ -214,7 +214,7 @@ class MapToMapConverterTests {
 	}
 
 	@Test
-	void noDefaultConstructorCopyNotRequired() throws Exception {
+	void noDefaultConstructorCopyNotRequired() {
 		// SPR-9284
 		NoDefaultConstructorMap<String, Integer> map = new NoDefaultConstructorMap<>(
 				Collections.<String, Integer>singletonMap("1", 1));

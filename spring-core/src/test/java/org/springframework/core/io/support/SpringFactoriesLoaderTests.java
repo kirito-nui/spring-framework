@@ -85,8 +85,8 @@ class SpringFactoriesLoaderTests {
 	void loadWhenDuplicateRegistrationsPresentReturnsListInCorrectOrder() {
 		List<DummyFactory> factories = SpringFactoriesLoader.forDefaultResourceLocation().load(DummyFactory.class);
 		assertThat(factories).hasSize(2);
-		assertThat(factories.get(0)).isInstanceOf(MyDummyFactory1.class);
-		assertThat(factories.get(1)).isInstanceOf(MyDummyFactory2.class);
+		assertThat(factories).element(0).isInstanceOf(MyDummyFactory1.class);
+		assertThat(factories).element(1).isInstanceOf(MyDummyFactory2.class);
 	}
 
 	@Test
@@ -119,9 +119,9 @@ class SpringFactoriesLoaderTests {
 		List<DummyFactory> factories = SpringFactoriesLoader.forDefaultResourceLocation(LimitedClassLoader.constructorArgumentFactories)
 					.load(DummyFactory.class, resolver);
 		assertThat(factories).hasSize(3);
-		assertThat(factories.get(0)).isInstanceOf(MyDummyFactory1.class);
-		assertThat(factories.get(1)).isInstanceOf(MyDummyFactory2.class);
-		assertThat(factories.get(2)).isInstanceOf(ConstructorArgsDummyFactory.class);
+		assertThat(factories).element(0).isInstanceOf(MyDummyFactory1.class);
+		assertThat(factories).element(1).isInstanceOf(MyDummyFactory2.class);
+		assertThat(factories).element(2).isInstanceOf(ConstructorArgsDummyFactory.class);
 		assertThat(factories).extracting(DummyFactory::getString).containsExactly("Foo", "Bar", "injected");
 	}
 
@@ -143,8 +143,8 @@ class SpringFactoriesLoaderTests {
 		List<DummyFactory> factories = SpringFactoriesLoader.forDefaultResourceLocation(LimitedClassLoader.multipleArgumentFactories)
 					.load(DummyFactory.class, failureHandler);
 		assertThat(factories).hasSize(2);
-		assertThat(factories.get(0)).isInstanceOf(MyDummyFactory1.class);
-		assertThat(factories.get(1)).isInstanceOf(MyDummyFactory2.class);
+		assertThat(factories).element(0).isInstanceOf(MyDummyFactory1.class);
+		assertThat(factories).element(1).isInstanceOf(MyDummyFactory2.class);
 	}
 
 	@Test
@@ -152,8 +152,8 @@ class SpringFactoriesLoaderTests {
 		List<DummyFactory> factories = SpringFactoriesLoader.loadFactories(
 				DummyFactory.class, null);
 		assertThat(factories).hasSize(2);
-		assertThat(factories.get(0)).isInstanceOf(MyDummyFactory1.class);
-		assertThat(factories.get(1)).isInstanceOf(MyDummyFactory2.class);
+		assertThat(factories).element(0).isInstanceOf(MyDummyFactory1.class);
+		assertThat(factories).element(1).isInstanceOf(MyDummyFactory2.class);
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class SpringFactoriesLoaderTests {
 		List<DummyFactory> factories = SpringFactoriesLoader.forResourceLocation(
 				"META-INF/custom/custom-spring.factories").load(DummyFactory.class);
 		assertThat(factories).hasSize(1);
-		assertThat(factories.get(0)).isInstanceOf(MyDummyFactory1.class);
+		assertThat(factories).element(0).isInstanceOf(MyDummyFactory1.class);
 	}
 
 	@Test
@@ -221,9 +221,8 @@ class SpringFactoriesLoaderTests {
 			handler.handleFailure(DummyFactory.class, MyDummyFactory1.class.getName(), cause);
 			assertThat(failures).containsExactly(cause);
 			assertThat(messages).hasSize(1);
-			assertThat(messages.get(0)).startsWith("Unable to instantiate factory class");
+			assertThat(messages).element(0).asString().startsWith("Unable to instantiate factory class");
 		}
-
 	}
 
 
@@ -292,8 +291,8 @@ class SpringFactoriesLoaderTests {
 			assertThat(resolver.resolve(Integer.class)).isEqualTo(123);
 			assertThat(resolver.resolve(Long.class)).isEqualTo(234L);
 		}
-
 	}
+
 
 	@Nested
 	class FactoryInstantiatorTests {
@@ -350,14 +349,12 @@ class SpringFactoriesLoaderTests {
 		}
 
 		static class DefaultConstructor {
-
 		}
 
 		static class SingleConstructor {
 
 			SingleConstructor(String arg) {
 			}
-
 		}
 
 		static class MultiplePrivateAndSinglePublicConstructor {
@@ -368,7 +365,6 @@ class SpringFactoriesLoaderTests {
 
 			private MultiplePrivateAndSinglePublicConstructor(String arg, boolean extra) {
 			}
-
 		}
 
 		static class MultiplePackagePrivateAndSinglePublicConstructor {
@@ -379,22 +375,18 @@ class SpringFactoriesLoaderTests {
 
 			MultiplePackagePrivateAndSinglePublicConstructor(String arg, boolean extra) {
 			}
-
 		}
-
 
 		static class SinglePackagePrivateConstructor {
 
 			SinglePackagePrivateConstructor(String arg) {
 			}
-
 		}
 
 		static class SinglePrivateConstructor {
 
 			private SinglePrivateConstructor(String arg) {
 			}
-
 		}
 
 		static class MultiplePackagePrivateConstructors {
@@ -405,10 +397,9 @@ class SpringFactoriesLoaderTests {
 
 			MultiplePackagePrivateConstructors(String arg, boolean extra) {
 			}
-
 		}
-
 	}
+
 
 	private static class LimitedClassLoader extends URLClassLoader {
 
@@ -428,7 +419,6 @@ class SpringFactoriesLoaderTests {
 				throw new IllegalStateException(ex);
 			}
 		}
-
 	}
 
 }

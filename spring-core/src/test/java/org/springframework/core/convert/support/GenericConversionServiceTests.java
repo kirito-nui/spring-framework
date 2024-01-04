@@ -302,7 +302,7 @@ class GenericConversionServiceTests {
 	void wildcardMap() throws Exception {
 		Map<String, String> input = new LinkedHashMap<>();
 		input.put("key", "value");
-		Object converted = conversionService.convert(input, TypeDescriptor.forObject(input), new TypeDescriptor(getClass().getField("wildcardMap")));
+		Object converted = conversionService.convert(input, new TypeDescriptor(getClass().getField("wildcardMap")));
 		assertThat(converted).isEqualTo(input);
 	}
 
@@ -386,7 +386,7 @@ class GenericConversionServiceTests {
 	void convertiblePairDifferentEqualsAndHash() {
 		GenericConverter.ConvertiblePair pair = new GenericConverter.ConvertiblePair(Number.class, String.class);
 		GenericConverter.ConvertiblePair pairOpposite = new GenericConverter.ConvertiblePair(String.class, Number.class);
-		assertThat(pair.equals(pairOpposite)).isFalse();
+		assertThat(pair).isNotEqualTo(pairOpposite);
 		assertThat(pair.hashCode()).isNotEqualTo(pairOpposite.hashCode());
 	}
 
@@ -476,7 +476,7 @@ class GenericConversionServiceTests {
 	}
 
 	@Test
-	void subclassOfEnumToString() throws Exception {
+	void subclassOfEnumToString() {
 		conversionService.addConverter(new EnumToStringConverter(conversionService));
 		assertThat(conversionService.convert(EnumWithSubclass.FIRST, String.class)).isEqualTo("FIRST");
 	}
@@ -633,7 +633,7 @@ class GenericConversionServiceTests {
 	}
 
 
-	private static class MyStringToIntegerArrayConverter implements Converter<String, Integer[]>	{
+	private static class MyStringToIntegerArrayConverter implements Converter<String, Integer[]> {
 
 		@Override
 		public Integer[] convert(String source) {

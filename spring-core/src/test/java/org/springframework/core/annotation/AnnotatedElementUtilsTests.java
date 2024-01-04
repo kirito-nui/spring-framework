@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,8 +171,8 @@ class AnnotatedElementUtilsTests {
 
 	@Test
 	void getMetaAnnotationTypesOnNonAnnotatedClass() {
-		assertThat(getMetaAnnotationTypes(NonAnnotatedClass.class, TransactionalComponent.class).isEmpty()).isTrue();
-		assertThat(getMetaAnnotationTypes(NonAnnotatedClass.class, TransactionalComponent.class.getName()).isEmpty()).isTrue();
+		assertThat(getMetaAnnotationTypes(NonAnnotatedClass.class, TransactionalComponent.class)).isEmpty();
+		assertThat(getMetaAnnotationTypes(NonAnnotatedClass.class, TransactionalComponent.class.getName())).isEmpty();
 	}
 
 	@Test
@@ -752,7 +752,7 @@ class AnnotatedElementUtilsTests {
 	 * @see <a href="https://github.com/spring-projects/spring-framework/issues/23767">#23767</a>
 	 */
 	@Test
-	void findMergedAnnotationAttributesOnClassWithComposedMetaTransactionalAnnotation() throws Exception {
+	void findMergedAnnotationAttributesOnClassWithComposedMetaTransactionalAnnotation() {
 		Class<?> clazz = ComposedTransactionalClass.class;
 
 		AnnotationAttributes attributes = findMergedAnnotationAttributes(clazz, AliasedTransactional.class);
@@ -766,7 +766,7 @@ class AnnotatedElementUtilsTests {
 	 * @see <a href="https://github.com/spring-projects/spring-framework/issues/23767">#23767</a>
 	 */
 	@Test
-	void findMergedAnnotationOnClassWithComposedMetaTransactionalAnnotation() throws Exception {
+	void findMergedAnnotationOnClassWithComposedMetaTransactionalAnnotation() {
 		Class<?> clazz = ComposedTransactionalClass.class;
 
 		AliasedTransactional annotation = findMergedAnnotation(clazz, AliasedTransactional.class);
@@ -848,13 +848,13 @@ class AnnotatedElementUtilsTests {
 	}
 
 	@Test
-	void javaxAnnotationTypeViaFindMergedAnnotation() throws Exception {
+	void javaxAnnotationTypeViaFindMergedAnnotation() {
 		assertThat(findMergedAnnotation(ResourceHolder.class, Resource.class)).isEqualTo(ResourceHolder.class.getAnnotation(Resource.class));
 		assertThat(findMergedAnnotation(SpringAppConfigClass.class, Resource.class)).isEqualTo(SpringAppConfigClass.class.getAnnotation(Resource.class));
 	}
 
 	@Test
-	void javaxMetaAnnotationTypeViaFindMergedAnnotation() throws Exception {
+	void javaxMetaAnnotationTypeViaFindMergedAnnotation() {
 		assertThat(findMergedAnnotation(ParametersAreNonnullByDefault.class, Nonnull.class)).isEqualTo(ParametersAreNonnullByDefault.class.getAnnotation(Nonnull.class));
 		assertThat(findMergedAnnotation(ResourceHolder.class, Nonnull.class)).isEqualTo(ParametersAreNonnullByDefault.class.getAnnotation(Nonnull.class));
 	}
@@ -869,7 +869,7 @@ class AnnotatedElementUtilsTests {
 	void getAllMergedAnnotationsOnClassWithInterface() throws Exception {
 		Method method = TransactionalServiceImpl.class.getMethod("doIt");
 		Set<Transactional> allMergedAnnotations = getAllMergedAnnotations(method, Transactional.class);
-		assertThat(allMergedAnnotations.isEmpty()).isTrue();
+		assertThat(allMergedAnnotations).isEmpty();
 	}
 
 	@Test
@@ -1388,7 +1388,7 @@ class AnnotatedElementUtilsTests {
 		void handleFromInterface();
 	}
 
-	static abstract class AbstractClassWithInheritedAnnotation<T> implements InterfaceWithInheritedAnnotation {
+	abstract static class AbstractClassWithInheritedAnnotation<T> implements InterfaceWithInheritedAnnotation {
 
 		@Transactional
 		public abstract void handle();

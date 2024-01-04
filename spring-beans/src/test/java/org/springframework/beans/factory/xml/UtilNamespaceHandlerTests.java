@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Mark Fisher
  */
 @SuppressWarnings("rawtypes")
-public class UtilNamespaceHandlerTests {
+class UtilNamespaceHandlerTests {
 
 	private DefaultListableBeanFactory beanFactory;
 
@@ -65,13 +65,13 @@ public class UtilNamespaceHandlerTests {
 	@Test
 	void testConstant() {
 		Integer min = (Integer) this.beanFactory.getBean("min");
-		assertThat(min.intValue()).isEqualTo(Integer.MIN_VALUE);
+		assertThat(min).isEqualTo(Integer.MIN_VALUE);
 	}
 
 	@Test
 	void testConstantWithDefaultName() {
 		Integer max = (Integer) this.beanFactory.getBean("java.lang.Integer.MAX_VALUE");
-		assertThat(max.intValue()).isEqualTo(Integer.MAX_VALUE);
+		assertThat(max).isEqualTo(Integer.MAX_VALUE);
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class UtilNamespaceHandlerTests {
 	@Test
 	void testSimpleList() {
 		List<?> list = (List) this.beanFactory.getBean("simpleList");
-		assertThat(list.get(0)).isEqualTo("Rob Harrop");
+		assertThat(list).element(0).isEqualTo("Rob Harrop");
 		List<?> list2 = (List) this.beanFactory.getBean("simpleList");
 		assertThat(list).isSameAs(list2);
 	}
@@ -134,9 +134,9 @@ public class UtilNamespaceHandlerTests {
 	@Test
 	void testScopedList() {
 		List<?> list = (List) this.beanFactory.getBean("scopedList");
-		assertThat(list.get(0)).isEqualTo("Rob Harrop");
+		assertThat(list).element(0).isEqualTo("Rob Harrop");
 		List<?> list2 = (List) this.beanFactory.getBean("scopedList");
-		assertThat(list2.get(0)).isEqualTo("Rob Harrop");
+		assertThat(list2).element(0).isEqualTo("Rob Harrop");
 		assertThat(list).isNotSameAs(list2);
 	}
 
@@ -177,7 +177,7 @@ public class UtilNamespaceHandlerTests {
 
 		List<?> list = bean.getSomeList();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo("foo");
+		assertThat(list).element(0).isEqualTo("foo");
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(set).hasSize(1);
@@ -208,7 +208,7 @@ public class UtilNamespaceHandlerTests {
 
 		List<?> list = bean.getSomeList();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo("foo");
+		assertThat(list).element(0).isEqualTo("foo");
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(set).hasSize(1);
@@ -229,7 +229,7 @@ public class UtilNamespaceHandlerTests {
 
 		List<?> list = bean.getSomeList();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo(Integer.MIN_VALUE);
+		assertThat(list).element(0).isEqualTo(Integer.MIN_VALUE);
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(set).hasSize(2);
@@ -255,7 +255,7 @@ public class UtilNamespaceHandlerTests {
 
 		List<?> list = bean.getSomeList();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo(bean);
+		assertThat(list).element(0).isEqualTo(bean);
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(set).hasSize(1);
@@ -274,7 +274,7 @@ public class UtilNamespaceHandlerTests {
 		List<?> list = bean.getSomeList();
 		assertThat(Proxy.isProxyClass(list.getClass())).isTrue();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo(bean);
+		assertThat(list).element(0).isEqualTo(bean);
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(Proxy.isProxyClass(set.getClass())).isFalse();
@@ -295,7 +295,7 @@ public class UtilNamespaceHandlerTests {
 		List<?> list = bean.getSomeList();
 		assertThat(Proxy.isProxyClass(list.getClass())).isFalse();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo(bean);
+		assertThat(list).element(0).isEqualTo(bean);
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(Proxy.isProxyClass(set.getClass())).isTrue();
@@ -316,7 +316,7 @@ public class UtilNamespaceHandlerTests {
 		List<?> list = bean.getSomeList();
 		assertThat(Proxy.isProxyClass(list.getClass())).isFalse();
 		assertThat(list).hasSize(1);
-		assertThat(list.get(0)).isEqualTo(bean);
+		assertThat(list).element(0).isEqualTo(bean);
 
 		Set<?> set = bean.getSomeSet();
 		assertThat(Proxy.isProxyClass(set.getClass())).isFalse();

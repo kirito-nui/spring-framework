@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.transaction.TransactionDefinition;
  * apply to ancestor classes up the class hierarchy; inherited methods need to be
  * locally redeclared in order to participate in a subclass-level annotation. For
  * details on method visibility constraints, consult the
- * <a href="https://docs.spring.io/spring-framework/docs/current/reference/html/data-access.html#transaction">Transaction Management</a>
+ * <a href="https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative/annotations.html#transaction-declarative-annotations-method-visibility">Transaction Management</a>
  * section of the reference manual.
  *
  * <p>This annotation is generally directly comparable to Spring's
@@ -104,6 +104,11 @@ import org.springframework.transaction.TransactionDefinition;
  * uses the Reactor context instead of thread-local variables. As a consequence,
  * all participating data access operations need to execute within the same
  * Reactor context in the same reactive pipeline.
+ *
+ * <p><b>Note: When configured with a {@code ReactiveTransactionManager}, all
+ * transaction-demarcated methods are expected to return a reactive pipeline.</b>
+ * Void methods or regular return types need to be associated with a regular
+ * {@code PlatformTransactionManager}, e.g. through {@link #transactionManager()}.
  *
  * @author Colin Sampaleanu
  * @author Juergen Hoeller

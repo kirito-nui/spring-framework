@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
 
 package org.springframework.aop.framework.autoproxy;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
-import test.mixin.Lockable;
 
 import org.springframework.aop.Advisor;
 import org.springframework.aop.framework.Advised;
@@ -32,6 +29,7 @@ import org.springframework.aop.target.PrototypeTargetSource;
 import org.springframework.aop.target.ThreadLocalTargetSource;
 import org.springframework.aop.testfixture.advice.CountingBeforeAdvice;
 import org.springframework.aop.testfixture.interceptor.NopInterceptor;
+import org.springframework.aop.testfixture.mixin.Lockable;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.testfixture.beans.CountingTestBean;
 import org.springframework.beans.testfixture.beans.ITestBean;
@@ -48,8 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  * @author Chris Beams
  */
-@SuppressWarnings("resource")
-public class AdvisorAutoProxyCreatorTests {
+class AdvisorAutoProxyCreatorTests {
 
 	private static final Class<?> CLASS = AdvisorAutoProxyCreatorTests.class;
 	private static final String CLASSNAME = CLASS.getSimpleName();
@@ -64,7 +61,7 @@ public class AdvisorAutoProxyCreatorTests {
 	/**
 	 * Return a bean factory with attributes and EnterpriseServices configured.
 	 */
-	protected BeanFactory getBeanFactory() throws IOException {
+	protected BeanFactory getBeanFactory() {
 		return new ClassPathXmlApplicationContext(DEFAULT_CONTEXT, CLASS);
 	}
 
@@ -75,7 +72,7 @@ public class AdvisorAutoProxyCreatorTests {
 	 * which are sourced from matching advisors
 	 */
 	@Test
-	public void testCommonInterceptorAndAdvisor() throws Exception {
+	void testCommonInterceptorAndAdvisor() {
 		BeanFactory bf = new ClassPathXmlApplicationContext(COMMON_INTERCEPTORS_CONTEXT, CLASS);
 		ITestBean test1 = (ITestBean) bf.getBean("test1");
 		assertThat(AopUtils.isAopProxy(test1)).isTrue();
@@ -120,7 +117,7 @@ public class AdvisorAutoProxyCreatorTests {
 	 * hence no proxying, for this bean
 	 */
 	@Test
-	public void testCustomTargetSourceNoMatch() throws Exception {
+	void testCustomTargetSourceNoMatch() {
 		BeanFactory bf = new ClassPathXmlApplicationContext(CUSTOM_TARGETSOURCE_CONTEXT, CLASS);
 		ITestBean test = (ITestBean) bf.getBean("test");
 		assertThat(AopUtils.isAopProxy(test)).isFalse();
@@ -129,7 +126,7 @@ public class AdvisorAutoProxyCreatorTests {
 	}
 
 	@Test
-	public void testCustomPrototypeTargetSource() throws Exception {
+	void testCustomPrototypeTargetSource() {
 		CountingTestBean.count = 0;
 		BeanFactory bf = new ClassPathXmlApplicationContext(CUSTOM_TARGETSOURCE_CONTEXT, CLASS);
 		ITestBean test = (ITestBean) bf.getBean("prototypeTest");
@@ -145,7 +142,7 @@ public class AdvisorAutoProxyCreatorTests {
 	}
 
 	@Test
-	public void testLazyInitTargetSource() throws Exception {
+	void testLazyInitTargetSource() {
 		CountingTestBean.count = 0;
 		BeanFactory bf = new ClassPathXmlApplicationContext(CUSTOM_TARGETSOURCE_CONTEXT, CLASS);
 		ITestBean test = (ITestBean) bf.getBean("lazyInitTest");
@@ -161,7 +158,7 @@ public class AdvisorAutoProxyCreatorTests {
 	}
 
 	@Test
-	public void testQuickTargetSourceCreator() throws Exception {
+	void testQuickTargetSourceCreator() {
 		ClassPathXmlApplicationContext bf =
 				new ClassPathXmlApplicationContext(QUICK_TARGETSOURCE_CONTEXT, CLASS);
 		ITestBean test = (ITestBean) bf.getBean("test");
@@ -209,7 +206,7 @@ public class AdvisorAutoProxyCreatorTests {
 	}
 
 	@Test
-	public void testWithOptimizedProxy() throws Exception {
+	void testWithOptimizedProxy() {
 		BeanFactory beanFactory = new ClassPathXmlApplicationContext(OPTIMIZED_CONTEXT, CLASS);
 
 		ITestBean testBean = (ITestBean) beanFactory.getBean("optimizedTestBean");

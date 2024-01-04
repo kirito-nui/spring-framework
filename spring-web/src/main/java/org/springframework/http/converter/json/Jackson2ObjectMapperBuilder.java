@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.DatatypeFeature;
 import com.fasterxml.jackson.databind.cfg.HandlerInstantiator;
 import com.fasterxml.jackson.databind.introspect.AnnotationIntrospectorPair;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
@@ -581,7 +582,7 @@ public class Jackson2ObjectMapperBuilder {
 	 * @see com.fasterxml.jackson.databind.Module
 	 */
 	public Jackson2ObjectMapperBuilder modulesToInstall(Module... modules) {
-		this.modules = Arrays.asList(modules);
+		this.modules = new ArrayList<>(Arrays.asList(modules));
 		this.findWellKnownModules = true;
 		return this;
 	}
@@ -839,6 +840,9 @@ public class Jackson2ObjectMapperBuilder {
 		else if (feature instanceof DeserializationFeature deserializationFeature) {
 			objectMapper.configure(deserializationFeature, enabled);
 		}
+		else if (feature instanceof DatatypeFeature datatypeFeature) {
+			objectMapper.configure(datatypeFeature, enabled);
+		}
 		else if (feature instanceof MapperFeature mapperFeature) {
 			objectMapper.configure(mapperFeature, enabled);
 		}
@@ -857,6 +861,16 @@ public class Jackson2ObjectMapperBuilder {
 		}
 		catch (ClassNotFoundException ex) {
 			// jackson-datatype-jdk8 not available
+		}
+
+		try {
+			Class<? extends Module> parameterNamesModuleClass = (Class<? extends Module>)
+					ClassUtils.forName("com.fasterxml.jackson.module.paramnames.ParameterNamesModule", this.moduleClassLoader);
+			Module parameterNamesModule = BeanUtils.instantiateClass(parameterNamesModuleClass);
+			modulesToRegister.set(parameterNamesModule.getTypeId(), parameterNamesModule);
+		}
+		catch (ClassNotFoundException ex) {
+			// jackson-module-parameter-names not available
 		}
 
 		try {

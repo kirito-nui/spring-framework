@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,17 @@ package org.springframework.web.method.support;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Map;
 
-import org.reactivestreams.Publisher;
+import kotlin.Unit;
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KClass;
+import kotlin.reflect.KFunction;
+import kotlin.reflect.KParameter;
+import kotlin.reflect.jvm.KCallablesJvm;
+import kotlin.reflect.jvm.ReflectJvmMapping;
 
 import org.springframework.context.MessageSource;
 import org.springframework.core.CoroutinesUtils;
@@ -29,7 +37,11 @@ import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.validation.method.MethodValidator;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -50,6 +62,11 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
+	private static final Class<?>[] EMPTY_GROUPS = new Class<?>[0];
+
+	private static final ReflectionUtils.MethodFilter boxImplFilter =
+			(method -> method.isSynthetic() && Modifier.isStatic(method.getModifiers()) && method.getName().equals("box-impl"));
+
 
 	private HandlerMethodArgumentResolverComposite resolvers = new HandlerMethodArgumentResolverComposite();
 
@@ -57,6 +74,9 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 	@Nullable
 	private WebDataBinderFactory dataBinderFactory;
+
+	@Nullable
+	private MethodValidator methodValidator;
 
 
 	/**
@@ -121,6 +141,16 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		this.dataBinderFactory = dataBinderFactory;
 	}
 
+	/**
+	 * Set the {@link MethodValidator} to perform method validation with if the
+	 * controller method {@link #shouldValidateArguments()} or
+	 * {@link #shouldValidateReturnValue()}.
+	 * @since 6.1
+	 */
+	public void setMethodValidator(@Nullable MethodValidator methodValidator) {
+		this.methodValidator = methodValidator;
+	}
+
 
 	/**
 	 * Invoke the method after resolving its argument values in the context of the given request.
@@ -149,7 +179,21 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Arguments: " + Arrays.toString(args));
 		}
-		return doInvoke(args);
+
+		Class<?>[] groups = getValidationGroups();
+		if (shouldValidateArguments() && this.methodValidator != null) {
+			this.methodValidator.applyArgumentValidation(
+					getBean(), getBridgedMethod(), getMethodParameters(), args, groups);
+		}
+
+		Object returnValue = doInvoke(args);
+
+		if (shouldValidateReturnValue() && this.methodValidator != null) {
+			this.methodValidator.applyReturnValueValidation(
+					getBean(), getBridgedMethod(), getReturnType(), returnValue, groups);
+		}
+
+		return returnValue;
 	}
 
 	/**
@@ -194,6 +238,11 @@ public class InvocableHandlerMethod extends HandlerMethod {
 		return args;
 	}
 
+	private Class<?>[] getValidationGroups() {
+		return ((shouldValidateArguments() || shouldValidateReturnValue()) && this.methodValidator != null ?
+				this.methodValidator.determineValidationGroups(getBean(), getBridgedMethod()) : EMPTY_GROUPS);
+	}
+
 	/**
 	 * Invoke the handler method with the given argument values.
 	 */
@@ -201,8 +250,13 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	protected Object doInvoke(Object... args) throws Exception {
 		Method method = getBridgedMethod();
 		try {
-			if (KotlinDetector.isSuspendingFunction(method)) {
-				return invokeSuspendingFunction(method, getBean(), args);
+			if (KotlinDetector.isKotlinReflectPresent()) {
+				if (KotlinDetector.isSuspendingFunction(method)) {
+					return invokeSuspendingFunction(method, getBean(), args);
+				}
+				else if (KotlinDetector.isKotlinType(method.getDeclaringClass())) {
+					return KotlinDelegate.invokeFunction(method, getBean(), args);
+				}
 			}
 			return method.invoke(getBean(), args);
 		}
@@ -240,8 +294,50 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	 * instead.
 	 * @since 6.0
 	 */
-	protected Publisher<?> invokeSuspendingFunction(Method method, Object target, Object[] args) {
+	protected Object invokeSuspendingFunction(Method method, Object target, Object[] args) {
 		return CoroutinesUtils.invokeSuspendingFunction(method, target, args);
+	}
+
+	/**
+	 * Inner class to avoid a hard dependency on Kotlin at runtime.
+	 */
+	private static class KotlinDelegate {
+
+		@Nullable
+		@SuppressWarnings("deprecation")
+		public static Object invokeFunction(Method method, Object target, Object[] args) throws InvocationTargetException, IllegalAccessException {
+			KFunction<?> function = ReflectJvmMapping.getKotlinFunction(method);
+			// For property accessors
+			if (function == null) {
+				return method.invoke(target, args);
+			}
+			if (method.isAccessible() && !KCallablesJvm.isAccessible(function)) {
+				KCallablesJvm.setAccessible(function, true);
+			}
+			Map<KParameter, Object> argMap = CollectionUtils.newHashMap(args.length + 1);
+			int index = 0;
+			for (KParameter parameter : function.getParameters()) {
+				switch (parameter.getKind()) {
+					case INSTANCE -> argMap.put(parameter, target);
+					case VALUE, EXTENSION_RECEIVER -> {
+						if (!parameter.isOptional() || args[index] != null) {
+							if (parameter.getType().getClassifier() instanceof KClass<?> kClass && kClass.isValue()) {
+								Class<?> javaClass = JvmClassMappingKt.getJavaClass(kClass);
+								Method[] methods = ReflectionUtils.getUniqueDeclaredMethods(javaClass, boxImplFilter);
+								Assert.state(methods.length == 1, "Unable to find a single box-impl synthetic static method in " + javaClass.getName());
+								argMap.put(parameter, ReflectionUtils.invokeMethod(methods[0], null, args[index]));
+							}
+							else {
+								argMap.put(parameter, args[index]);
+							}
+						}
+						index++;
+					}
+				}
+			}
+			Object result = function.callBy(argMap);
+			return (result == Unit.INSTANCE ? null : result);
+		}
 	}
 
 }

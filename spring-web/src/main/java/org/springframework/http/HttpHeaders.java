@@ -40,6 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1821,23 +1822,20 @@ public class HttpHeaders implements MultiValueMap<String, String>, Serializable 
 		return this.headers.entrySet();
 	}
 
-
 	@Override
-	public boolean equals(@Nullable Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof HttpHeaders other)) {
-			return false;
-		}
-		return unwrap(this).equals(unwrap(other));
+	public void forEach(BiConsumer<? super String, ? super List<String>> action) {
+		this.headers.forEach(action);
 	}
 
-	private static MultiValueMap<String, String> unwrap(HttpHeaders headers) {
-		while (headers.headers instanceof HttpHeaders httpHeaders) {
-			headers = httpHeaders;
-		}
-		return headers.headers;
+	@Override
+	public List<String> putIfAbsent(String key, List<String> value) {
+		return this.headers.putIfAbsent(key, value);
+	}
+
+
+	@Override
+	public boolean equals(@Nullable Object other) {
+		return (this == other || (other instanceof HttpHeaders that && unwrap(this).equals(unwrap(that))));
 	}
 
 	@Override
@@ -1942,6 +1940,14 @@ public class HttpHeaders implements MultiValueMap<String, String>, Serializable 
 		String credentialsString = username + ":" + password;
 		byte[] encodedBytes = Base64.getEncoder().encode(credentialsString.getBytes(charset));
 		return new String(encodedBytes, charset);
+	}
+
+
+	private static MultiValueMap<String, String> unwrap(HttpHeaders headers) {
+		while (headers.headers instanceof HttpHeaders httpHeaders) {
+			headers = httpHeaders;
+		}
+		return headers.headers;
 	}
 
 	// Package-private: used in ResponseCookie

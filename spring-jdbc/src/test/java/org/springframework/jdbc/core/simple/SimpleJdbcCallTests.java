@@ -239,8 +239,9 @@ class SimpleJdbcCallTests {
 		given(databaseMetaData.getDatabaseProductName()).willReturn("Oracle");
 		given(databaseMetaData.getUserName()).willReturn("ME");
 		given(databaseMetaData.storesUpperCaseIdentifiers()).willReturn(true);
-		given(databaseMetaData.getProcedures("", "ME", "ADD_INVOICE")).willReturn(proceduresResultSet);
-		given(databaseMetaData.getProcedureColumns("", "ME", "ADD_INVOICE", null)).willReturn(procedureColumnsResultSet);
+		given(databaseMetaData.getSearchStringEscape()).willReturn("@");
+		given(databaseMetaData.getProcedures("", "ME", "ADD@_INVOICE")).willReturn(proceduresResultSet);
+		given(databaseMetaData.getProcedureColumns("", "ME", "ADD@_INVOICE", null)).willReturn(procedureColumnsResultSet);
 
 		given(proceduresResultSet.next()).willReturn(true, false);
 		given(proceduresResultSet.getString("PROCEDURE_NAME")).willReturn("add_invoice");
@@ -306,8 +307,9 @@ class SimpleJdbcCallTests {
 		given(databaseMetaData.getDatabaseProductName()).willReturn("Oracle");
 		given(databaseMetaData.getUserName()).willReturn("ME");
 		given(databaseMetaData.storesUpperCaseIdentifiers()).willReturn(true);
-		given(databaseMetaData.getProcedures("", "ME", "ADD_INVOICE")).willReturn(proceduresResultSet);
-		given(databaseMetaData.getProcedureColumns("", "ME", "ADD_INVOICE", null)).willReturn(procedureColumnsResultSet);
+		given(databaseMetaData.getSearchStringEscape()).willReturn("@");
+		given(databaseMetaData.getProcedures("", "ME", "ADD@_INVOICE")).willReturn(proceduresResultSet);
+		given(databaseMetaData.getProcedureColumns("", "ME", "ADD@_INVOICE", null)).willReturn(procedureColumnsResultSet);
 
 		given(proceduresResultSet.next()).willReturn(true, false);
 		given(proceduresResultSet.getString("PROCEDURE_NAME")).willReturn("add_invoice");
@@ -330,8 +332,8 @@ class SimpleJdbcCallTests {
 	}
 
 	private void verifyAddInvoiceWithMetaData(boolean isFunction) throws SQLException {
-		ResultSet proceduresResultSet = databaseMetaData.getProcedures("", "ME", "ADD_INVOICE");
-		ResultSet procedureColumnsResultSet = databaseMetaData.getProcedureColumns("", "ME", "ADD_INVOICE", null);
+		ResultSet proceduresResultSet = databaseMetaData.getProcedures("", "ME", "ADD@_INVOICE");
+		ResultSet procedureColumnsResultSet = databaseMetaData.getProcedureColumns("", "ME", "ADD@_INVOICE", null);
 		if (isFunction) {
 			verify(callableStatement).registerOutParameter(1, 4);
 			verify(callableStatement).setObject(2, 1103, 4);
@@ -345,6 +347,19 @@ class SimpleJdbcCallTests {
 		verify(callableStatement).close();
 		verify(proceduresResultSet).close();
 		verify(procedureColumnsResultSet).close();
+	}
+
+	@Test
+	void correctSybaseFunctionStatementNamed() throws Exception {
+		given(databaseMetaData.getDatabaseProductName()).willReturn("Sybase");
+		SimpleJdbcCall adder = new SimpleJdbcCall(dataSource)
+				.withoutProcedureColumnMetaDataAccess()
+				.withNamedBinding()
+				.withProcedureName("ADD_INVOICE")
+				.declareParameters(new SqlParameter("@AMOUNT", Types.NUMERIC))
+				.declareParameters(new SqlParameter("@CUSTID", Types.NUMERIC));
+		adder.compile();
+		verifyStatement(adder, "{call ADD_INVOICE(@AMOUNT = ?, @CUSTID = ?)}");
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,9 +49,9 @@ public class InterceptingHttpAccessorTests {
 		);
 		accessor.setInterceptors(interceptors);
 
-		assertThat(accessor.getInterceptors().get(0)).isInstanceOf(FirstClientHttpRequestInterceptor.class);
-		assertThat(accessor.getInterceptors().get(1)).isInstanceOf(SecondClientHttpRequestInterceptor.class);
-		assertThat(accessor.getInterceptors().get(2)).isInstanceOf(ThirdClientHttpRequestInterceptor.class);
+		assertThat(accessor.getInterceptors()).element(0).isInstanceOf(FirstClientHttpRequestInterceptor.class);
+		assertThat(accessor.getInterceptors()).element(1).isInstanceOf(SecondClientHttpRequestInterceptor.class);
+		assertThat(accessor.getInterceptors()).element(2).isInstanceOf(ThirdClientHttpRequestInterceptor.class);
 	}
 
 

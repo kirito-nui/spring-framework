@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,11 +33,13 @@ import jakarta.persistence.PersistenceException;
 
 import org.springframework.context.index.CandidateComponentsIndex;
 import org.springframework.context.index.CandidateComponentsIndexLoader;
+import org.springframework.core.SpringProperties;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.ClassFormatException;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -52,11 +54,17 @@ import org.springframework.util.ResourceUtils;
  * @author Stephane Nicoll
  * @since 6.0
  */
+@SuppressWarnings("removal") // components index
 public final class PersistenceManagedTypesScanner {
 
 	private static final String CLASS_RESOURCE_PATTERN = "/**/*.class";
 
 	private static final String PACKAGE_INFO_SUFFIX = ".package-info";
+
+	private static final String IGNORE_CLASSFORMAT_PROPERTY_NAME = "spring.classformat.ignore";
+
+	private static final boolean shouldIgnoreClassFormatException =
+			SpringProperties.getFlag(IGNORE_CLASSFORMAT_PROPERTY_NAME);
 
 	private static final Set<AnnotationTypeFilter> entityTypeFilters = new LinkedHashSet<>(4);
 
@@ -77,6 +85,7 @@ public final class PersistenceManagedTypesScanner {
 		this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);
 		this.componentsIndex = CandidateComponentsIndexLoader.loadIndex(resourceLoader.getClassLoader());
 	}
+
 
 	/**
 	 * Scan the specified packages and return a {@link PersistenceManagedTypes} that
@@ -129,6 +138,14 @@ public final class PersistenceManagedTypesScanner {
 				catch (FileNotFoundException ex) {
 					// Ignore non-readable resource
 				}
+				catch (ClassFormatException ex) {
+					if (!shouldIgnoreClassFormatException) {
+						throw new PersistenceException("Incompatible class format in " + resource, ex);
+					}
+				}
+				catch (Throwable ex) {
+					throw new PersistenceException("Failed to read candidate component class: " + resource, ex);
+				}
 			}
 		}
 		catch (IOException ex) {
@@ -149,6 +166,7 @@ public final class PersistenceManagedTypesScanner {
 		return false;
 	}
 
+
 	private static class ScanResult {
 
 		private final List<String> managedClassNames = new ArrayList<>();
@@ -162,6 +180,6 @@ public final class PersistenceManagedTypesScanner {
 			return new SimplePersistenceManagedTypes(this.managedClassNames,
 					this.managedPackages, this.persistenceUnitRootUrl);
 		}
-
 	}
+
 }

@@ -27,7 +27,8 @@ import java.util.Base64;
  * @author Gary Russell
  * @since 4.1
  * @see java.util.Base64
- * @deprecated as of Spring Framework 6.0.5 in favor of {@link Base64}.
+ * @deprecated as of Spring Framework 6.0.5 in favor of {@link Base64}; scheduled
+ * for removal in 6.2
  */
 @Deprecated(since = "6.0.5", forRemoval = true)
 public abstract class Base64Utils {
@@ -97,7 +98,7 @@ public abstract class Base64Utils {
 	}
 
 	/**
-	 * Base64-decode the given byte array from an UTF-8 String.
+	 * Base64-decode the given byte array from a UTF-8 String.
 	 * @param src the encoded UTF-8 String
 	 * @return the original byte array
 	 */
@@ -119,7 +120,7 @@ public abstract class Base64Utils {
 	}
 
 	/**
-	 * Base64-decode the given byte array from an UTF-8 String using the RFC 4648
+	 * Base64-decode the given byte array from a UTF-8 String using the RFC 4648
 	 * "URL and Filename Safe Alphabet".
 	 * @param src the encoded UTF-8 String
 	 * @return the original byte array

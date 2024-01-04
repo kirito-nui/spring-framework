@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2021 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,30 +38,30 @@ import static org.assertj.core.api.Assertions.entry;
 public abstract class AbstractAnnotationMetadataTests {
 
 	@Test
-	public void verifyEquals() throws Exception {
+	public void verifyEquals() {
 		AnnotationMetadata testClass1 = get(TestClass.class);
 		AnnotationMetadata testClass2 = get(TestClass.class);
 		AnnotationMetadata testMemberClass1 = get(TestMemberClass.class);
 		AnnotationMetadata testMemberClass2 = get(TestMemberClass.class);
 
-		assertThat(testClass1.equals(null)).isFalse();
+		assertThat(testClass1).isNotEqualTo(null);
 
-		assertThat(testClass1.equals(testClass1)).isTrue();
-		assertThat(testClass2.equals(testClass2)).isTrue();
-		assertThat(testClass1.equals(testClass2)).isTrue();
-		assertThat(testClass2.equals(testClass1)).isTrue();
+		assertThat(testClass1).isEqualTo(testClass1);
+		assertThat(testClass2).isEqualTo(testClass2);
+		assertThat(testClass1).isEqualTo(testClass2);
+		assertThat(testClass2).isEqualTo(testClass1);
 
-		assertThat(testMemberClass1.equals(testMemberClass1)).isTrue();
-		assertThat(testMemberClass2.equals(testMemberClass2)).isTrue();
-		assertThat(testMemberClass1.equals(testMemberClass2)).isTrue();
-		assertThat(testMemberClass2.equals(testMemberClass1)).isTrue();
+		assertThat(testMemberClass1).isEqualTo(testMemberClass1);
+		assertThat(testMemberClass2).isEqualTo(testMemberClass2);
+		assertThat(testMemberClass1).isEqualTo(testMemberClass2);
+		assertThat(testMemberClass2).isEqualTo(testMemberClass1);
 
-		assertThat(testClass1.equals(testMemberClass1)).isFalse();
-		assertThat(testMemberClass1.equals(testClass1)).isFalse();
+		assertThat(testClass1).isNotEqualTo(testMemberClass1);
+		assertThat(testMemberClass1).isNotEqualTo(testClass1);
 	}
 
 	@Test
-	public void verifyHashCode() throws Exception {
+	public void verifyHashCode() {
 		AnnotationMetadata testClass1 = get(TestClass.class);
 		AnnotationMetadata testClass2 = get(TestClass.class);
 		AnnotationMetadata testMemberClass1 = get(TestMemberClass.class);
@@ -74,7 +74,7 @@ public abstract class AbstractAnnotationMetadataTests {
 	}
 
 	@Test
-	public void verifyToString() throws Exception {
+	public void verifyToString() {
 		assertThat(get(TestClass.class).toString()).isEqualTo(TestClass.class.getName());
 	}
 

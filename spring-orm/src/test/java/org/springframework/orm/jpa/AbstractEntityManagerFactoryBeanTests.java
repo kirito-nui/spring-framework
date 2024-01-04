@@ -40,12 +40,12 @@ public abstract class AbstractEntityManagerFactoryBeanTests {
 	protected static EntityManagerFactory mockEmf;
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		mockEmf = mock();
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		assertThat(TransactionSynchronizationManager.getResourceMap()).isEmpty();
 		assertThat(TransactionSynchronizationManager.isSynchronizationActive()).isFalse();
 		assertThat(TransactionSynchronizationManager.isCurrentTransactionReadOnly()).isFalse();
@@ -68,7 +68,7 @@ public abstract class AbstractEntityManagerFactoryBeanTests {
 
 		private static final long serialVersionUID = 1L;
 
-		private transient final EntityManagerFactory emf;
+		private final transient EntityManagerFactory emf;
 
 		public DummyEntityManagerFactoryBean(EntityManagerFactory emf) {
 			this.emf = emf;

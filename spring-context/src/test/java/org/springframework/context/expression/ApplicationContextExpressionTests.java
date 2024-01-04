@@ -160,7 +160,7 @@ class ApplicationContextExpressionTests {
 			ValueTestBean tb3 = ac.getBean("tb3", ValueTestBean.class);
 			assertThat(tb3.name).isEqualTo("XXXmyNameYYY42ZZZ");
 			assertThat(tb3.age).isEqualTo(42);
-			assertThat(tb3.ageFactory.getObject().intValue()).isEqualTo(42);
+			assertThat(tb3.ageFactory.getObject()).isEqualTo(42);
 			assertThat(tb3.country).isEqualTo("123 UK");
 			assertThat(tb3.countryFactory.getObject()).isEqualTo("123 UK");
 			System.getProperties().put("country", "US");
@@ -196,7 +196,7 @@ class ApplicationContextExpressionTests {
 			assertThat(tb6.tb).isSameAs(tb0);
 		}
 		finally {
-			System.getProperties().remove("country");
+			System.clearProperty("country");
 		}
 	}
 
@@ -230,8 +230,8 @@ class ApplicationContextExpressionTests {
 			assertThat(tb.getCountry2()).isEqualTo("-UK2-");
 		}
 		finally {
-			System.getProperties().remove("name");
-			System.getProperties().remove("country");
+			System.clearProperty("name");
+			System.clearProperty("country");
 		}
 	}
 
@@ -264,7 +264,7 @@ class ApplicationContextExpressionTests {
 			assertThat(FileCopyUtils.copyToString(resourceInjectionBean.reader)).isEqualTo(FileCopyUtils.copyToString(new EncodedResource(resource).getReader()));
 		}
 		finally {
-			System.getProperties().remove("logfile");
+			System.clearProperty("logfile");
 		}
 	}
 

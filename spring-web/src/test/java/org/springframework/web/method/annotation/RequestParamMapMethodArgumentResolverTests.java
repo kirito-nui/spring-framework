@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,10 +147,10 @@ public class RequestParamMapMethodArgumentResolverTests {
 		MultiValueMap<String, MultipartFile> resultMap = (MultiValueMap<String, MultipartFile>) result;
 		assertThat(resultMap).hasSize(2);
 		assertThat(resultMap.get("mfilelist")).hasSize(2);
-		assertThat(resultMap.get("mfilelist").get(0)).isEqualTo(expected1);
-		assertThat(resultMap.get("mfilelist").get(1)).isEqualTo(expected2);
+		assertThat(resultMap.get("mfilelist")).element(0).isEqualTo(expected1);
+		assertThat(resultMap.get("mfilelist")).element(1).isEqualTo(expected2);
 		assertThat(resultMap.get("other")).hasSize(1);
-		assertThat(resultMap.get("other").get(0)).isEqualTo(expected3);
+		assertThat(resultMap.get("other")).element(0).isEqualTo(expected3);
 	}
 
 	@Test
@@ -196,10 +196,10 @@ public class RequestParamMapMethodArgumentResolverTests {
 		MultiValueMap<String, Part> resultMap = (MultiValueMap<String, Part>) result;
 		assertThat(resultMap).hasSize(2);
 		assertThat(resultMap.get("mfilelist")).hasSize(2);
-		assertThat(resultMap.get("mfilelist").get(0)).isEqualTo(expected1);
-		assertThat(resultMap.get("mfilelist").get(1)).isEqualTo(expected2);
+		assertThat(resultMap.get("mfilelist")).element(0).isEqualTo(expected1);
+		assertThat(resultMap.get("mfilelist")).element(1).isEqualTo(expected2);
 		assertThat(resultMap.get("other")).hasSize(1);
-		assertThat(resultMap.get("other").get(0)).isEqualTo(expected3);
+		assertThat(resultMap.get("other")).element(0).isEqualTo(expected3);
 	}
 
 

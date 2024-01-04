@@ -105,14 +105,14 @@ class ServerHttpResponseTests {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set(HttpHeaders.CONTENT_ENCODING, "gzip");
 		headers.setContentLength(12);
-		response.writeWith(body).onErrorResume(ex -> Mono.empty()).block();
+		response.writeWith(body).onErrorComplete().block();
 
 		assertThat(response.statusCodeWritten).isFalse();
 		assertThat(response.headersWritten).isFalse();
 		assertThat(response.cookiesWritten).isFalse();
 		assertThat(headers).doesNotContainKeys(HttpHeaders.CONTENT_TYPE, HttpHeaders.CONTENT_LENGTH,
 				HttpHeaders.CONTENT_ENCODING);
-		assertThat(response.body.isEmpty()).isTrue();
+		assertThat(response.body).isEmpty();
 	}
 
 	@Test
@@ -123,7 +123,7 @@ class ServerHttpResponseTests {
 		assertThat(response.statusCodeWritten).isTrue();
 		assertThat(response.headersWritten).isTrue();
 		assertThat(response.cookiesWritten).isTrue();
-		assertThat(response.body.isEmpty()).isTrue();
+		assertThat(response.body).isEmpty();
 	}
 
 	@Test
@@ -157,7 +157,7 @@ class ServerHttpResponseTests {
 		assertThat(response.statusCodeWritten).isTrue();
 		assertThat(response.headersWritten).isTrue();
 		assertThat(response.cookiesWritten).isTrue();
-		assertThat(response.body.isEmpty()).isTrue();
+		assertThat(response.body).isEmpty();
 		assertThat(response.getCookies().getFirst("ID")).isSameAs(cookie);
 	}
 

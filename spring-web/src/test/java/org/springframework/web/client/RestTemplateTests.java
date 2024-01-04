@@ -525,8 +525,8 @@ class RestTemplateTests {
 					.toList();
 
 			assertThat(accepts).hasSize(1);
-			assertThat(accepts.get(0)).hasSize(1);
-			assertThat(accepts.get(0).get(0)).isEqualTo("application/json");
+			assertThat(accepts).element(0).asList().hasSize(1);
+			assertThat(accepts.get(0)).element(0).isEqualTo("application/json");
 		}
 	}
 
@@ -766,7 +766,7 @@ class RestTemplateTests {
 		given(request.getHeaders()).willReturn(requestHeaders);
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "removal" })
 	private void mockResponseStatus(HttpStatus responseStatus) throws Exception {
 		given(request.execute()).willReturn(response);
 		given(errorHandler.hasError(response)).willReturn(responseStatus.isError());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,30 +38,30 @@ import static org.assertj.core.api.Assertions.entry;
 public abstract class AbstractMethodMetadataTests {
 
 	@Test
-	public void verifyEquals() throws Exception {
+	public void verifyEquals() {
 		MethodMetadata withMethod1 = getTagged(WithMethod.class);
 		MethodMetadata withMethod2 = getTagged(WithMethod.class);
 		MethodMetadata withMethodWithTwoArguments1 = getTagged(WithMethodWithTwoArguments.class);
 		MethodMetadata withMethodWithTwoArguments2 = getTagged(WithMethodWithTwoArguments.class);
 
-		assertThat(withMethod1.equals(null)).isFalse();
+		assertThat(withMethod1).isNotEqualTo(null);
 
-		assertThat(withMethod1.equals(withMethod1)).isTrue();
-		assertThat(withMethod2.equals(withMethod2)).isTrue();
-		assertThat(withMethod1.equals(withMethod2)).isTrue();
-		assertThat(withMethod2.equals(withMethod1)).isTrue();
+		assertThat(withMethod1).isEqualTo(withMethod1);
+		assertThat(withMethod2).isEqualTo(withMethod2);
+		assertThat(withMethod1).isEqualTo(withMethod2);
+		assertThat(withMethod2).isEqualTo(withMethod1);
 
-		assertThat(withMethodWithTwoArguments1.equals(withMethodWithTwoArguments1)).isTrue();
-		assertThat(withMethodWithTwoArguments2.equals(withMethodWithTwoArguments2)).isTrue();
-		assertThat(withMethodWithTwoArguments1.equals(withMethodWithTwoArguments2)).isTrue();
-		assertThat(withMethodWithTwoArguments2.equals(withMethodWithTwoArguments1)).isTrue();
+		assertThat(withMethodWithTwoArguments1).isEqualTo(withMethodWithTwoArguments1);
+		assertThat(withMethodWithTwoArguments2).isEqualTo(withMethodWithTwoArguments2);
+		assertThat(withMethodWithTwoArguments1).isEqualTo(withMethodWithTwoArguments2);
+		assertThat(withMethodWithTwoArguments2).isEqualTo(withMethodWithTwoArguments1);
 
-		assertThat(withMethod1.equals(withMethodWithTwoArguments1)).isFalse();
-		assertThat(withMethodWithTwoArguments1.equals(withMethod1)).isFalse();
+		assertThat(withMethod1).isNotEqualTo(withMethodWithTwoArguments1);
+		assertThat(withMethodWithTwoArguments1).isNotEqualTo(withMethod1);
 	}
 
 	@Test
-	public void verifyHashCode() throws Exception {
+	public void verifyHashCode() {
 		MethodMetadata withMethod1 = getTagged(WithMethod.class);
 		MethodMetadata withMethod2 = getTagged(WithMethod.class);
 		MethodMetadata withMethodWithTwoArguments1 = getTagged(WithMethodWithTwoArguments.class);
@@ -74,7 +74,7 @@ public abstract class AbstractMethodMetadataTests {
 	}
 
 	@Test
-	public void verifyToString() throws Exception {
+	public void verifyToString() {
 		assertThat(getTagged(WithMethod.class).toString())
 			.endsWith(WithMethod.class.getName() + ".test()");
 
@@ -263,13 +263,13 @@ public abstract class AbstractMethodMetadataTests {
 	public static class WithPrivateMethod {
 
 		@Tag
-		private final String test() {
+		private String test() {
 			return "";
 		}
 
 	}
 
-	public static abstract class WithDirectAnnotation {
+	public abstract static class WithDirectAnnotation {
 
 		@Tag
 		@DirectAnnotation
@@ -277,7 +277,7 @@ public abstract class AbstractMethodMetadataTests {
 
 	}
 
-	public static abstract class WithMetaAnnotation {
+	public abstract static class WithMetaAnnotation {
 
 		@Tag
 		@MetaAnnotation
@@ -294,7 +294,7 @@ public abstract class AbstractMethodMetadataTests {
 	@interface MetaAnnotation {
 	}
 
-	public static abstract class WithAnnotationAttributes {
+	public abstract static class WithAnnotationAttributes {
 
 		@Tag
 		@AnnotationAttributes(name = "test", size = 1)
@@ -302,7 +302,7 @@ public abstract class AbstractMethodMetadataTests {
 
 	}
 
-	public static abstract class WithMetaAnnotationAttributes {
+	public abstract static class WithMetaAnnotationAttributes {
 
 		@Tag
 		@MetaAnnotationAttributes1

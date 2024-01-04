@@ -726,7 +726,7 @@ public class MockHttpServletRequest implements HttpServletRequest {
 		}
 		else if (this.inputStream != null) {
 			throw new IllegalStateException(
-					"Cannot call getReader() after getInputStream() has already been called for the current request")			;
+					"Cannot call getReader() after getInputStream() has already been called for the current request");
 		}
 
 		if (this.content != null) {
@@ -1159,7 +1159,8 @@ public class MockHttpServletRequest implements HttpServletRequest {
 	@Override
 	public Enumeration<String> getHeaders(String name) {
 		HeaderValueHolder header = this.headers.get(name);
-		return Collections.enumeration(header != null ? header.getStringValues() : new LinkedList<>());
+		return (header != null ? Collections.enumeration(header.getStringValues()) :
+				Collections.emptyEnumeration());
 	}
 
 	@Override

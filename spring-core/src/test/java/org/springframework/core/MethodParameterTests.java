@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2020 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,12 +65,12 @@ class MethodParameterTests {
 		assertThat(longParameter).isEqualTo(longParameter);
 		assertThat(intReturnType).isEqualTo(intReturnType);
 
-		assertThat(stringParameter.equals(longParameter)).isFalse();
-		assertThat(stringParameter.equals(intReturnType)).isFalse();
-		assertThat(longParameter.equals(stringParameter)).isFalse();
-		assertThat(longParameter.equals(intReturnType)).isFalse();
-		assertThat(intReturnType.equals(stringParameter)).isFalse();
-		assertThat(intReturnType.equals(longParameter)).isFalse();
+		assertThat(stringParameter).isNotEqualTo(longParameter);
+		assertThat(stringParameter).isNotEqualTo(intReturnType);
+		assertThat(longParameter).isNotEqualTo(stringParameter);
+		assertThat(longParameter).isNotEqualTo(intReturnType);
+		assertThat(intReturnType).isNotEqualTo(stringParameter);
+		assertThat(intReturnType).isNotEqualTo(longParameter);
 
 		Method method = getClass().getMethod("method", String.class, Long.TYPE);
 		MethodParameter methodParameter = new MethodParameter(method, 0);

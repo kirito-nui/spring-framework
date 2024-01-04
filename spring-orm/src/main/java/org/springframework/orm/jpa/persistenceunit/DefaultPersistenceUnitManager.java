@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -444,9 +444,12 @@ public class DefaultPersistenceUnitManager
 
 		List<SpringPersistenceUnitInfo> puis = readPersistenceUnitInfos();
 		for (SpringPersistenceUnitInfo pui : puis) {
+			// Determine default persistence unit root URL
 			if (pui.getPersistenceUnitRootUrl() == null) {
 				pui.setPersistenceUnitRootUrl(determineDefaultPersistenceUnitRootUrl());
 			}
+
+			// Override DataSource and shared cache mode
 			if (pui.getJtaDataSource() == null && this.defaultJtaDataSource != null) {
 				pui.setJtaDataSource(this.defaultJtaDataSource);
 			}
@@ -456,16 +459,22 @@ public class DefaultPersistenceUnitManager
 			if (this.sharedCacheMode != null) {
 				pui.setSharedCacheMode(this.sharedCacheMode);
 			}
+			// Setting validationMode != ValidationMode.AUTO will ignore bean validation
+			// during schema generation, see https://hibernate.atlassian.net/browse/HHH-12287
 			if (this.validationMode != null) {
 				pui.setValidationMode(this.validationMode);
 			}
+
+			// Initialize persistence unit ClassLoader
 			if (this.loadTimeWeaver != null) {
 				pui.init(this.loadTimeWeaver);
 			}
 			else {
 				pui.init(this.resourcePatternResolver.getClassLoader());
 			}
+
 			postProcessPersistenceUnitInfo(pui);
+
 			String name = pui.getPersistenceUnitName();
 			if (!this.persistenceUnitInfoNames.add(name) && !isPersistenceUnitOverrideAllowed()) {
 				StringBuilder msg = new StringBuilder();

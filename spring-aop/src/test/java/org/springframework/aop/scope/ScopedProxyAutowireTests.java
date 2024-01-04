@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,8 @@ public class ScopedProxyAutowireTests {
 		new XmlBeanDefinitionReader(bf).loadBeanDefinitions(
 				qualifiedResource(ScopedProxyAutowireTests.class, "scopedAutowireFalse.xml"));
 
-		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, false, false)).contains("scoped")).isTrue();
-		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, true, false)).contains("scoped")).isTrue();
+		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, false, false))).contains("scoped");
+		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, true, false))).contains("scoped");
 		assertThat(bf.containsSingleton("scoped")).isFalse();
 		TestBean autowired = (TestBean) bf.getBean("autowired");
 		TestBean unscoped = (TestBean) bf.getBean("unscoped");
@@ -53,8 +53,8 @@ public class ScopedProxyAutowireTests {
 		new XmlBeanDefinitionReader(bf).loadBeanDefinitions(
 				qualifiedResource(ScopedProxyAutowireTests.class, "scopedAutowireTrue.xml"));
 
-		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, true, false)).contains("scoped")).isTrue();
-		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, false, false)).contains("scoped")).isTrue();
+		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, true, false))).contains("scoped");
+		assertThat(Arrays.asList(bf.getBeanNamesForType(TestBean.class, false, false))).contains("scoped");
 		assertThat(bf.containsSingleton("scoped")).isFalse();
 		TestBean autowired = (TestBean) bf.getBean("autowired");
 		TestBean scoped = (TestBean) bf.getBean("scoped");

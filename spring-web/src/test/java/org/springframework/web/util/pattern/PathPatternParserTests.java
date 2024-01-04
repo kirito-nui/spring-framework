@@ -112,7 +112,7 @@ public class PathPatternParserTests {
 
 		pp1 = caseInsensitiveParser.parse("/abc");
 		pp2 = caseSensitiveParser.parse("/abc");
-		assertThat(pp1.equals(pp2)).isFalse();
+		assertThat(pp1).isNotEqualTo(pp2);
 		assertThat(pp2.hashCode()).isNotEqualTo(pp1.hashCode());
 	}
 
@@ -365,7 +365,7 @@ public class PathPatternParserTests {
 		patterns.add(p3);
 		patterns.add(p1);
 		Collections.sort(patterns);
-		assertThat(patterns.get(0)).isEqualTo(p1);
+		assertThat(patterns).element(0).isEqualTo(p1);
 
 		// Based purely on length
 		p1 = parse("/a/b/c");
@@ -377,7 +377,7 @@ public class PathPatternParserTests {
 		patterns.add(p3);
 		patterns.add(p1);
 		Collections.sort(patterns);
-		assertThat(patterns.get(0)).isEqualTo(p3);
+		assertThat(patterns).element(0).isEqualTo(p3);
 
 		// Based purely on 'wildness'
 		p1 = parse("/*");
@@ -389,7 +389,7 @@ public class PathPatternParserTests {
 		patterns.add(p3);
 		patterns.add(p1);
 		Collections.sort(patterns);
-		assertThat(patterns.get(0)).isEqualTo(p1);
+		assertThat(patterns).element(0).isEqualTo(p1);
 
 		// Based purely on catchAll
 		p1 = parse("{*foobar}");
@@ -410,8 +410,8 @@ public class PathPatternParserTests {
 		patterns.add(p3);
 		patterns.add(p1);
 		Collections.sort(patterns);
-		assertThat(patterns.get(0)).isEqualTo(p3);
-		assertThat(patterns.get(1)).isEqualTo(p2);
+		assertThat(patterns).element(0).isEqualTo(p3);
+		assertThat(patterns).element(1).isEqualTo(p2);
 	}
 
 	@Test
@@ -474,7 +474,7 @@ public class PathPatternParserTests {
 	}
 
 	@SafeVarargs
-	private final void assertPathElements(PathPattern p, Class<? extends PathElement>... sectionClasses) {
+	private void assertPathElements(PathPattern p, Class<? extends PathElement>... sectionClasses) {
 		PathElement head = p.getHeadSection();
 		for (Class<? extends PathElement> sectionClass : sectionClasses) {
 			if (head == null) {

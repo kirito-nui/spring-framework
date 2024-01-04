@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.springframework.core.env;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -37,12 +36,8 @@ class PropertySourceTests {
 	@Test
 	@SuppressWarnings("serial")
 	void equals() {
-		Map<String, Object> map1 = new HashMap<>() {{
-			put("a", "b");
-		}};
-		Map<String, Object> map2 = new HashMap<>() {{
-			put("c", "d");
-		}};
+		Map<String, Object> map1 = Map.of("a", "b");
+		Map<String, Object> map2 = Map.of("c", "d");
 		Properties props1 = new Properties() {{
 			setProperty("a", "b");
 		}};
@@ -69,19 +64,15 @@ class PropertySourceTests {
 	@Test
 	@SuppressWarnings("serial")
 	void collectionsOperations() {
-		Map<String, Object> map1 = new HashMap<>() {{
-			put("a", "b");
-		}};
-		Map<String, Object> map2 = new HashMap<>() {{
-			put("c", "d");
-		}};
+		Map<String, Object> map1 = Map.of("a", "b");
+		Map<String, Object> map2 = Map.of("c", "d");
 
 		PropertySource<?> ps1 = new MapPropertySource("ps1", map1);
 		ps1.getSource();
 		List<PropertySource<?>> propertySources = new ArrayList<>();
 		assertThat(propertySources.add(ps1)).isTrue();
-		assertThat(propertySources.contains(ps1)).isTrue();
-		assertThat(propertySources.contains(PropertySource.named("ps1"))).isTrue();
+		assertThat(propertySources).contains(ps1);
+		assertThat(propertySources).contains(PropertySource.named("ps1"));
 
 		PropertySource<?> ps1replacement = new MapPropertySource("ps1", map2); // notice - different map
 		assertThat(propertySources.add(ps1replacement)).isTrue(); // true because linkedlist allows duplicates

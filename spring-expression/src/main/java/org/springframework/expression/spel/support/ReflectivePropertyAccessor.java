@@ -27,7 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import kotlin.jvm.JvmClassMappingKt;
+import kotlin.reflect.KClass;
+import kotlin.reflect.KMutableProperty;
+import kotlin.reflect.KProperty;
+import kotlin.reflect.full.KClasses;
+import kotlin.reflect.jvm.ReflectJvmMapping;
+
 import org.springframework.asm.MethodVisitor;
+import org.springframework.core.KotlinDetector;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.Property;
 import org.springframework.core.convert.TypeDescriptor;
@@ -55,6 +63,7 @@ import org.springframework.util.StringUtils;
  * @author Juergen Hoeller
  * @author Phillip Webb
  * @author Sam Brannen
+ * @author Sebastien Deleuze
  * @since 3.0
  * @see StandardEvaluationContext
  * @see SimpleEvaluationContext
@@ -349,9 +358,9 @@ public class ReflectivePropertyAccessor implements PropertyAccessor {
 
 	@Nullable
 	private Method findGetterForProperty(String propertyName, Class<?> clazz, Object target) {
-		boolean targetIsaClass = (target instanceof Class);
-		Method method = findGetterForProperty(propertyName, clazz, targetIsaClass);
-		if (method == null && targetIsaClass) {
+		boolean targetIsAClass = (target instanceof Class);
+		Method method = findGetterForProperty(propertyName, clazz, targetIsAClass);
+		if (method == null && targetIsAClass) {
 			// Fallback for getter instance methods in java.lang.Class.
 			method = findGetterForProperty(propertyName, Class.class, false);
 		}
@@ -401,7 +410,8 @@ public class ReflectivePropertyAccessor implements PropertyAccessor {
 		Method[] methods = getSortedMethods(clazz);
 		for (String methodSuffix : methodSuffixes) {
 			for (Method method : methods) {
-				if (isCandidateForProperty(method, clazz) && method.getName().equals(prefix + methodSuffix) &&
+				if (isCandidateForProperty(method, clazz) &&
+						(method.getName().equals(prefix + methodSuffix) || isKotlinProperty(method, methodSuffix)) &&
 						method.getParameterCount() == numberOfParams &&
 						(!mustBeStatic || Modifier.isStatic(method.getModifiers())) &&
 						(requiredReturnTypes.isEmpty() || requiredReturnTypes.contains(method.getReturnType()))) {
@@ -557,6 +567,13 @@ public class ReflectivePropertyAccessor implements PropertyAccessor {
 		return this;
 	}
 
+	private static boolean isKotlinProperty(Method method, String methodSuffix) {
+		Class<?> clazz = method.getDeclaringClass();
+		return KotlinDetector.isKotlinReflectPresent() &&
+				KotlinDetector.isKotlinType(clazz) &&
+				KotlinDelegate.isKotlinProperty(method, methodSuffix);
+	}
+
 
 	/**
 	 * Captures the member (method/field) to call reflectively to access a property value
@@ -591,14 +608,9 @@ public class ReflectivePropertyAccessor implements PropertyAccessor {
 
 		@Override
 		public boolean equals(@Nullable Object other) {
-			if (this == other) {
-				return true;
-			}
-			if (!(other instanceof PropertyCacheKey otherKey)) {
-				return false;
-			}
-			return (this.clazz == otherKey.clazz && this.property.equals(otherKey.property) &&
-					this.targetIsClass == otherKey.targetIsClass);
+			return (this == other || (other instanceof PropertyCacheKey that &&
+					this.clazz == that.clazz && this.property.equals(that.property) &&
+					this.targetIsClass == that.targetIsClass));
 		}
 
 		@Override
@@ -758,6 +770,26 @@ public class ReflectivePropertyAccessor implements PropertyAccessor {
 						CodeFlow.toJvmDescriptor(((Field) this.member).getType()));
 			}
 		}
+	}
+
+	/**
+	 * Inner class to avoid a hard dependency on Kotlin at runtime.
+	 */
+	private static class KotlinDelegate {
+
+		public static boolean isKotlinProperty(Method method, String methodSuffix) {
+			KClass<?> kClass = JvmClassMappingKt.getKotlinClass(method.getDeclaringClass());
+			for (KProperty<?> property : KClasses.getMemberProperties(kClass)) {
+				if (methodSuffix.equalsIgnoreCase(property.getName()) &&
+						(method.equals(ReflectJvmMapping.getJavaGetter(property)) ||
+								property instanceof KMutableProperty<?> mutableProperty &&
+										method.equals(ReflectJvmMapping.getJavaSetter(mutableProperty)))) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}
 
 }

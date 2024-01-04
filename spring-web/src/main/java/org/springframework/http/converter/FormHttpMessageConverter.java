@@ -16,6 +16,7 @@
 
 package org.springframework.http.converter;
 
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URLDecoder;
@@ -399,7 +400,17 @@ public class FormHttpMessageConverter implements HttpMessageConverter<MultiValue
 		outputMessage.getHeaders().setContentLength(bytes.length);
 
 		if (outputMessage instanceof StreamingHttpOutputMessage streamingOutputMessage) {
-			streamingOutputMessage.setBody(outputStream -> StreamUtils.copy(bytes, outputStream));
+			streamingOutputMessage.setBody(new StreamingHttpOutputMessage.Body() {
+				@Override
+				public void writeTo(OutputStream outputStream) throws IOException {
+					StreamUtils.copy(bytes, outputStream);
+				}
+
+				@Override
+				public boolean repeatable() {
+					return true;
+				}
+			});
 		}
 		else {
 			StreamUtils.copy(bytes, outputMessage.getBody());
@@ -618,7 +629,7 @@ public class FormHttpMessageConverter implements HttpMessageConverter<MultiValue
 		private boolean headersWritten = false;
 
 		public MultipartHttpOutputMessage(OutputStream outputStream, Charset charset) {
-			this.outputStream = outputStream;
+			this.outputStream = new MultipartOutputStream(outputStream);
 			this.charset = charset;
 		}
 
@@ -654,6 +665,32 @@ public class FormHttpMessageConverter implements HttpMessageConverter<MultiValue
 		private byte[] getBytes(String name) {
 			return name.getBytes(this.charset);
 		}
+
 	}
+
+
+	/**
+	 * OutputStream that neither flushes nor closes.
+	 */
+	private static class MultipartOutputStream extends FilterOutputStream {
+
+		public MultipartOutputStream(OutputStream out) {
+			super(out);
+		}
+
+		@Override
+		public void write(byte[] b, int off, int let) throws IOException {
+			this.out.write(b, off, let);
+		}
+
+		@Override
+		public void flush() {
+		}
+
+		@Override
+		public void close() {
+		}
+	}
+
 
 }

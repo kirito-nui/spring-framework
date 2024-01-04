@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1050,7 +1050,7 @@ class ConfigurationClassPostProcessorTests {
 		CollectionArgumentConfiguration bean = ctx.getBean(CollectionArgumentConfiguration.class);
 		assertThat(bean.testBeans).isNotNull();
 		assertThat(bean.testBeans).hasSize(1);
-		assertThat(bean.testBeans.get(0)).isSameAs(ctx.getBean(TestBean.class));
+		assertThat(bean.testBeans).element(0).isSameAs(ctx.getBean(TestBean.class));
 		ctx.close();
 	}
 
@@ -1059,7 +1059,7 @@ class ConfigurationClassPostProcessorTests {
 		ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext(CollectionArgumentConfiguration.class);
 		CollectionArgumentConfiguration bean = ctx.getBean(CollectionArgumentConfiguration.class);
 		assertThat(bean.testBeans).isNotNull();
-		assertThat(bean.testBeans.isEmpty()).isTrue();
+		assertThat(bean.testBeans).isEmpty();
 		ctx.close();
 	}
 
@@ -1069,7 +1069,7 @@ class ConfigurationClassPostProcessorTests {
 		MapArgumentConfiguration bean = ctx.getBean(MapArgumentConfiguration.class);
 		assertThat(bean.testBeans).isNotNull();
 		assertThat(bean.testBeans).hasSize(1);
-		assertThat(bean.testBeans.values().iterator().next()).isSameAs(ctx.getBean(Runnable.class));
+		assertThat(bean.testBeans.values()).element(0).isSameAs(ctx.getBean(Runnable.class));
 		ctx.close();
 	}
 
@@ -1078,7 +1078,7 @@ class ConfigurationClassPostProcessorTests {
 		ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext(MapArgumentConfiguration.class);
 		MapArgumentConfiguration bean = ctx.getBean(MapArgumentConfiguration.class);
 		assertThat(bean.testBeans).isNotNull();
-		assertThat(bean.testBeans.isEmpty()).isTrue();
+		assertThat(bean.testBeans).isEmpty();
 		ctx.close();
 	}
 
@@ -1088,7 +1088,7 @@ class ConfigurationClassPostProcessorTests {
 		CollectionInjectionConfiguration bean = ctx.getBean(CollectionInjectionConfiguration.class);
 		assertThat(bean.testBeans).isNotNull();
 		assertThat(bean.testBeans).hasSize(1);
-		assertThat(bean.testBeans.get(0)).isSameAs(ctx.getBean(TestBean.class));
+		assertThat(bean.testBeans).element(0).isSameAs(ctx.getBean(TestBean.class));
 		ctx.close();
 	}
 
@@ -1131,11 +1131,11 @@ class ConfigurationClassPostProcessorTests {
 	@Order(1)
 	static class SingletonBeanConfig {
 
-		public @Bean Foo foo() {
+		@Bean public Foo foo() {
 			return new Foo();
 		}
 
-		public @Bean Bar bar() {
+		@Bean public Bar bar() {
 			return new Bar(foo());
 		}
 	}
@@ -1143,11 +1143,11 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration(proxyBeanMethods = false)
 	static class NonEnhancedSingletonBeanConfig {
 
-		public @Bean Foo foo() {
+		@Bean public Foo foo() {
 			return new Foo();
 		}
 
-		public @Bean Bar bar() {
+		@Bean public Bar bar() {
 			return new Bar(foo());
 		}
 	}
@@ -1155,11 +1155,13 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration
 	static class StaticSingletonBeanConfig {
 
-		public static @Bean Foo foo() {
+		@Bean
+		public static Foo foo() {
 			return new Foo();
 		}
 
-		public static @Bean Bar bar() {
+		@Bean
+		public static Bar bar() {
 			return new Bar(foo());
 		}
 	}
@@ -1168,11 +1170,11 @@ class ConfigurationClassPostProcessorTests {
 	@Order(2)
 	static class OverridingSingletonBeanConfig {
 
-		public @Bean ExtendedFoo foo() {
+		@Bean public ExtendedFoo foo() {
 			return new ExtendedFoo();
 		}
 
-		public @Bean Bar bar() {
+		@Bean public Bar bar() {
 			return new Bar(foo());
 		}
 	}
@@ -1180,7 +1182,7 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration
 	static class OverridingAgainSingletonBeanConfig {
 
-		public @Bean ExtendedAgainFoo foo() {
+		@Bean public ExtendedAgainFoo foo() {
 			return new ExtendedAgainFoo();
 		}
 	}
@@ -1188,7 +1190,7 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration
 	static class InvalidOverridingSingletonBeanConfig {
 
-		public @Bean Foo foo() {
+		@Bean public Foo foo() {
 			return new Foo();
 		}
 	}
@@ -1200,11 +1202,11 @@ class ConfigurationClassPostProcessorTests {
 		@Order(1)
 		static class SingletonBeanConfig {
 
-			public @Bean Foo foo() {
+			@Bean public Foo foo() {
 				return new Foo();
 			}
 
-			public @Bean Bar bar() {
+			@Bean public Bar bar() {
 				return new Bar(foo());
 			}
 		}
@@ -1213,11 +1215,11 @@ class ConfigurationClassPostProcessorTests {
 		@Order(2)
 		static class OverridingSingletonBeanConfig {
 
-			public @Bean ExtendedFoo foo() {
+			@Bean public ExtendedFoo foo() {
 				return new ExtendedFoo();
 			}
 
-			public @Bean Bar bar() {
+			@Bean public Bar bar() {
 				return new Bar(foo());
 			}
 		}
@@ -1233,11 +1235,11 @@ class ConfigurationClassPostProcessorTests {
 			public SingletonBeanConfig(ConfigWithOrderedInnerClasses other) {
 			}
 
-			public @Bean Foo foo() {
+			@Bean public Foo foo() {
 				return new Foo();
 			}
 
-			public @Bean Bar bar() {
+			@Bean public Bar bar() {
 				return new Bar(foo());
 			}
 		}
@@ -1250,11 +1252,11 @@ class ConfigurationClassPostProcessorTests {
 				other.getObject();
 			}
 
-			public @Bean ExtendedFoo foo() {
+			@Bean public ExtendedFoo foo() {
 				return new ExtendedFoo();
 			}
 
-			public @Bean Bar bar() {
+			@Bean public Bar bar() {
 				return new Bar(foo());
 			}
 		}
@@ -1281,7 +1283,7 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration
 	static class UnloadedConfig {
 
-		public @Bean Foo foo() {
+		@Bean public Foo foo() {
 			return new Foo();
 		}
 	}
@@ -1289,7 +1291,7 @@ class ConfigurationClassPostProcessorTests {
 	@Configuration
 	static class LoadedConfig {
 
-		public @Bean Bar bar() {
+		@Bean public Bar bar() {
 			return new Bar(new Foo());
 		}
 	}
@@ -1598,7 +1600,7 @@ class ConfigurationClassPostProcessorTests {
 	public static class WildcardWithGenericExtendsConfiguration {
 
 		@Bean
-		public Repository<? extends Object> genericRepo() {
+		public Repository<?> genericRepo() {
 			return new Repository<String>();
 		}
 
@@ -1707,7 +1709,7 @@ class ConfigurationClassPostProcessorTests {
 	}
 
 	@Configuration
-	public static abstract class AbstractConfig {
+	public abstract static class AbstractConfig {
 
 		@Bean
 		public ServiceBean serviceBean() {
@@ -1891,7 +1893,7 @@ class ConfigurationClassPostProcessorTests {
 		}
 	}
 
-	static abstract class FooFactory {
+	abstract static class FooFactory {
 
 		abstract DependingFoo createFoo(BarArgument bar);
 	}
@@ -2010,7 +2012,7 @@ class ConfigurationClassPostProcessorTests {
 	}
 
 	@Configuration
-	static abstract class BeanLookupConfiguration {
+	abstract static class BeanLookupConfiguration {
 
 		@Bean
 		public TestBean thing() {

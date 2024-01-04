@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ class DefaultEntityResponseBuilderTests {
 	void fromObjectTypeReference() {
 		String body = "foo";
 		EntityResponse<String> response = EntityResponse.fromObject(body,
-				new ParameterizedTypeReference<String>() {})
+				new ParameterizedTypeReference<>() {})
 				.build();
 
 		assertThat(response.entity()).isSameAs(body);
@@ -160,7 +160,7 @@ class DefaultEntityResponseBuilderTests {
 		EntityResponse<String> result =
 				EntityResponse.fromObject("foo").cookie(cookie)
 						.build();
-		assertThat(result.cookies().get("name").contains(cookie)).isTrue();
+		assertThat(result.cookies().get("name")).contains(cookie);
 	}
 
 	@Test

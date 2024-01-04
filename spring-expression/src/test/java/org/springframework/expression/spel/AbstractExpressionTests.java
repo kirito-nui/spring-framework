@@ -164,6 +164,24 @@ public abstract class AbstractExpressionTests {
 	 */
 	protected void evaluateAndCheckError(String expression, Class<?> expectedReturnType, SpelMessage expectedMessage,
 			Object... otherProperties) {
+
+		evaluateAndCheckError(this.parser, expression, expectedReturnType, expectedMessage, otherProperties);
+	}
+
+	/**
+	 * Evaluate the specified expression and ensure the expected message comes out.
+	 * The message may have inserts and they will be checked if otherProperties is specified.
+	 * The first entry in otherProperties should always be the position.
+	 * @param parser the expression parser to use
+	 * @param expression the expression to evaluate
+	 * @param expectedReturnType ask the expression return value to be of this type if possible
+	 * ({@code null} indicates don't ask for conversion)
+	 * @param expectedMessage the expected message
+	 * @param otherProperties the expected inserts within the message
+	 */
+	protected void evaluateAndCheckError(ExpressionParser parser, String expression, Class<?> expectedReturnType, SpelMessage expectedMessage,
+			Object... otherProperties) {
+
 		assertThatExceptionOfType(SpelEvaluationException.class).isThrownBy(() -> {
 			Expression expr = parser.parseExpression(expression);
 			assertThat(expr).as("expression").isNotNull();
@@ -240,8 +258,8 @@ public abstract class AbstractExpressionTests {
 		}
 		if (value.getClass().isArray()) {
 			StringBuilder sb = new StringBuilder();
-			if (value.getClass().getComponentType().isPrimitive()) {
-				Class<?> primitiveType = value.getClass().getComponentType();
+			if (value.getClass().componentType().isPrimitive()) {
+				Class<?> primitiveType = value.getClass().componentType();
 				if (primitiveType == Integer.TYPE) {
 					int[] l = (int[]) value;
 					sb.append("int[").append(l.length).append("]{");
@@ -269,10 +287,10 @@ public abstract class AbstractExpressionTests {
 							" in ExpressionTestCase.stringValueOf()");
 				}
 			}
-			else if (value.getClass().getComponentType().isArray()) {
+			else if (value.getClass().componentType().isArray()) {
 				List<Object> l = Arrays.asList((Object[]) value);
 				if (!isNested) {
-					sb.append(value.getClass().getComponentType().getName());
+					sb.append(value.getClass().componentType().getName());
 				}
 				sb.append('[').append(l.size()).append("]{");
 				int i = 0;
@@ -288,7 +306,7 @@ public abstract class AbstractExpressionTests {
 			else {
 				List<Object> l = Arrays.asList((Object[]) value);
 				if (!isNested) {
-					sb.append(value.getClass().getComponentType().getName());
+					sb.append(value.getClass().componentType().getName());
 				}
 				sb.append('[').append(l.size()).append("]{");
 				int i = 0;

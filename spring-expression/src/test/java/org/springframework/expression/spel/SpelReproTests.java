@@ -1375,9 +1375,9 @@ class SpelReproTests extends AbstractExpressionTests {
 		Object value = expr.getValue(coll);
 		assertThat(value).isInstanceOf(ArrayList.class);
 		@SuppressWarnings("rawtypes")
-		ArrayList list = (ArrayList) value;
-		assertThat(list.get(0)).isEqualTo("one");
-		assertThat(list.get(1)).isEqualTo("two");
+		ArrayList<?> list = (ArrayList) value;
+		assertThat(list).element(0).isEqualTo("one");
+		assertThat(list).element(1).isEqualTo("two");
 	}
 
 	@Test
@@ -1443,13 +1443,12 @@ class SpelReproTests extends AbstractExpressionTests {
 	}
 
 	@Test
-	@SuppressWarnings("rawtypes")
 	void SPR12522() {
 		SpelExpressionParser parser = new SpelExpressionParser();
 		Expression expression = parser.parseExpression("T(java.util.Arrays).asList('')");
 		Object value = expression.getValue();
 		assertThat(value).isInstanceOf(List.class);
-		assertThat(((List) value).isEmpty()).isTrue();
+		assertThat(((List<?>) value)).isEmpty();
 	}
 
 	@Test
@@ -1779,19 +1778,13 @@ class SpelReproTests extends AbstractExpressionTests {
 
 		@Override
 		public Object resolve(EvaluationContext context, String beanName) throws AccessException {
-			if (beanName.equals("foo")) {
-				return "custard";
-			}
-			else if (beanName.equals("foo.bar")) {
-				return "trouble";
-			}
-			else if (beanName.equals("&foo")) {
-				return "foo factory";
-			}
-			else if (beanName.equals("goo")) {
-				throw new AccessException("DONT ASK ME ABOUT GOO");
-			}
-			return null;
+			return switch (beanName) {
+				case "foo" -> "custard";
+				case "foo.bar" -> "trouble";
+				case "&foo" -> "foo factory";
+				case "goo" -> throw new AccessException("DONT ASK ME ABOUT GOO");
+				default -> null;
+			};
 		}
 	}
 

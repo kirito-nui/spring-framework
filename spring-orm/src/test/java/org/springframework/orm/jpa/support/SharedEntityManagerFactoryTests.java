@@ -35,10 +35,10 @@ import static org.mockito.Mockito.verify;
  * @author Juergen Hoeller
  * @author Phillip Webb
  */
-public class SharedEntityManagerFactoryTests {
+class SharedEntityManagerFactoryTests {
 
 	@Test
-	public void testValidUsage() {
+	void testValidUsage() {
 		Object o = new Object();
 
 		EntityManager mockEm = mock();
@@ -72,7 +72,7 @@ public class SharedEntityManagerFactoryTests {
 			TransactionSynchronizationManager.unbindResource(mockEmf);
 		}
 
-		assertThat(TransactionSynchronizationManager.getResourceMap().isEmpty()).isTrue();
+		assertThat(TransactionSynchronizationManager.getResourceMap()).isEmpty();
 		verify(mockEm).contains(o);
 		verify(mockEm).close();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,8 @@ class MockSpringFactoriesLoaderTests {
 	private void assertThatLoaderHasTestFactories(MockSpringFactoriesLoader loader) {
 		List<TestFactoryType> factories = loader.load(TestFactoryType.class);
 		assertThat(factories).hasSize(2);
-		assertThat(factories.get(0)).isInstanceOf(TestFactoryOne.class);
-		assertThat(factories.get(1)).isInstanceOf(TestFactoryTwo.class);
+		assertThat(factories).element(0).isInstanceOf(TestFactoryOne.class);
+		assertThat(factories).element(1).isInstanceOf(TestFactoryTwo.class);
 	}
 
 	interface TestFactoryType {

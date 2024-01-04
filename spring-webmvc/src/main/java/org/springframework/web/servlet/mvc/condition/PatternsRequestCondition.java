@@ -35,6 +35,7 @@ import org.springframework.util.PathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.util.pattern.PathPattern;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * A logical disjunction (' || ') request condition that matches a request
@@ -49,9 +50,9 @@ import org.springframework.web.util.pattern.PathPattern;
  */
 public class PatternsRequestCondition extends AbstractRequestCondition<PatternsRequestCondition> {
 
-	private final static Set<String> EMPTY_PATH_PATTERN = Collections.singleton("");
+	private static final Set<String> EMPTY_PATH_PATTERN = Collections.singleton("");
 
-	private final static String[] ROOT_PATH_PATTERNS = new String[] {"", "/"};
+	private static final String[] ROOT_PATH_PATTERNS = new String[] {"", "/"};
 
 
 	private final Set<String> patterns;
@@ -79,7 +80,7 @@ public class PatternsRequestCondition extends AbstractRequestCondition<PatternsR
 	 * {@link PathMatcher} and flag for matching trailing slashes.
 	 * @since 5.3
 	 */
-	public PatternsRequestCondition(String[] patterns,  boolean useTrailingSlashMatch,
+	public PatternsRequestCondition(String[] patterns, boolean useTrailingSlashMatch,
 			@Nullable PathMatcher pathMatcher) {
 
 		this(patterns, null, pathMatcher, useTrailingSlashMatch);
@@ -158,9 +159,7 @@ public class PatternsRequestCondition extends AbstractRequestCondition<PatternsR
 		}
 		Set<String> result = new LinkedHashSet<>(patterns.length);
 		for (String pattern : patterns) {
-			if (StringUtils.hasLength(pattern) && !pattern.startsWith("/")) {
-				pattern = "/" + pattern;
-			}
+			pattern = PathPatternParser.defaultInstance.initFullPathPattern(pattern);
 			result.add(pattern);
 		}
 		return result;

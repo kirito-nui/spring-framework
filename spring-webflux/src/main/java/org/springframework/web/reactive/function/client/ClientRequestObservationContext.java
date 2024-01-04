@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.springframework.web.reactive.function.client;
+
+import java.util.Optional;
 
 import io.micrometer.observation.transport.RequestReplySenderContext;
 
@@ -32,6 +34,13 @@ import org.springframework.lang.Nullable;
  */
 public class ClientRequestObservationContext extends RequestReplySenderContext<ClientRequest.Builder, ClientResponse> {
 
+	/**
+	 * Name of the request attribute holding the {@link ClientRequestObservationContext context}
+	 * for the current observation.
+	 * @since 6.1.2
+	 */
+	public static final String CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE = ClientRequestObservationContext.class.getName();
+
 	@Nullable
 	private String uriTemplate;
 
@@ -41,9 +50,26 @@ public class ClientRequestObservationContext extends RequestReplySenderContext<C
 	private ClientRequest request;
 
 
+	/**
+	 * Create a new Observation context for HTTP client observations.
+	 * @deprecated as of 6.1.2, in favor of {@link #ClientRequestObservationContext(ClientRequest.Builder)}
+	 */
+	@Deprecated(since = "6.1.2", forRemoval = true)
 	public ClientRequestObservationContext() {
 		super(ClientRequestObservationContext::setRequestHeader);
 	}
+
+	/**
+	 * Create a new Observation context for HTTP client observations.
+	 * @param request client request builder
+	 * @since 6.1.2
+	 */
+	public ClientRequestObservationContext(ClientRequest.Builder request) {
+		super(ClientRequestObservationContext::setRequestHeader);
+		setCarrier(request);
+		setRequest(request.build());
+	}
+
 
 	private static void setRequestHeader(@Nullable ClientRequest.Builder request, String name, String value) {
 		if (request != null) {
@@ -95,5 +121,16 @@ public class ClientRequestObservationContext extends RequestReplySenderContext<C
 	 */
 	public void setRequest(ClientRequest request) {
 		this.request = request;
+	}
+
+	/**
+	 * Get the current {@link ClientRequestObservationContext observation context}
+	 * from the given request, if available.
+	 * @param request the current client request
+	 * @return the current observation context
+	 * @since 6.1.2
+	 */
+	public static Optional<ClientRequestObservationContext> findCurrent(ClientRequest request) {
+		return Optional.ofNullable((ClientRequestObservationContext) request.attributes().get(CURRENT_OBSERVATION_CONTEXT_ATTRIBUTE));
 	}
 }

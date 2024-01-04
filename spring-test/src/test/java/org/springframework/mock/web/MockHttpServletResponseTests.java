@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2022 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -196,6 +196,18 @@ class MockHttpServletResponseTests {
 	}
 
 	@Test
+	void setCharacterEncodingNull() {
+		response.setContentType("test/plain");
+		response.setCharacterEncoding("UTF-8");
+		assertThat(response.getContentType()).isEqualTo("test/plain;charset=UTF-8");
+		assertThat(response.getHeader(CONTENT_TYPE)).isEqualTo("test/plain;charset=UTF-8");
+		response.setCharacterEncoding(null);
+		assertThat(response.getContentType()).isEqualTo("test/plain");
+		assertThat(response.getHeader(CONTENT_TYPE)).isEqualTo("test/plain");
+		assertThat(response.getCharacterEncoding()).isEqualTo(WebUtils.DEFAULT_CHARACTER_ENCODING);
+	}
+
+	@Test
 	void defaultCharacterEncoding() {
 		assertThat(response.isCharset()).isFalse();
 		assertThat(response.getContentType()).isNull();
@@ -253,7 +265,7 @@ class MockHttpServletResponseTests {
 		Collection<String> responseHeaders = response.getHeaderNames();
 		assertThat(responseHeaders).isNotNull();
 		assertThat(responseHeaders).hasSize(1);
-		assertThat(responseHeaders.iterator().next()).as("HTTP header casing not being preserved").isEqualTo(headerName);
+		assertThat(responseHeaders).element(0).as("HTTP header casing not being preserved").isEqualTo(headerName);
 	}
 
 	@Test
@@ -388,8 +400,8 @@ class MockHttpServletResponseTests {
 	void addDateHeader() {
 		response.addDateHeader(LAST_MODIFIED, 1437472800000L);
 		response.addDateHeader(LAST_MODIFIED, 1437472801000L);
-		assertThat(response.getHeaders(LAST_MODIFIED).get(0)).isEqualTo("Tue, 21 Jul 2015 10:00:00 GMT");
-		assertThat(response.getHeaders(LAST_MODIFIED).get(1)).isEqualTo("Tue, 21 Jul 2015 10:00:01 GMT");
+		assertThat(response.getHeaders(LAST_MODIFIED)).element(0).isEqualTo("Tue, 21 Jul 2015 10:00:00 GMT");
+		assertThat(response.getHeaders(LAST_MODIFIED)).element(1).isEqualTo("Tue, 21 Jul 2015 10:00:01 GMT");
 	}
 
 	@Test

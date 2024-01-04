@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.Test;
@@ -69,6 +70,9 @@ import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.ExecutorSubscribableChannel;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.tcp.ReconnectStrategy;
+import org.springframework.messaging.tcp.TcpConnectionHandler;
+import org.springframework.messaging.tcp.TcpOperations;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.AntPathMatcher;
@@ -98,9 +102,9 @@ public class MessageBrokerConfigurationTests {
 		Set<MessageHandler> handlers = channel.getSubscribers();
 
 		assertThat(handlers).hasSize(3);
-		assertThat(handlers.contains(context.getBean(SimpAnnotationMethodMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(UserDestinationMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(SimpleBrokerMessageHandler.class))).isTrue();
+		assertThat(handlers).contains(context.getBean(SimpAnnotationMethodMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(UserDestinationMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(SimpleBrokerMessageHandler.class));
 	}
 
 	@Test
@@ -111,9 +115,9 @@ public class MessageBrokerConfigurationTests {
 		Set<MessageHandler> handlers = channel.getSubscribers();
 
 		assertThat(handlers).hasSize(3);
-		assertThat(handlers.contains(context.getBean(SimpAnnotationMethodMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(UserDestinationMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(StompBrokerRelayMessageHandler.class))).isTrue();
+		assertThat(handlers).contains(context.getBean(SimpAnnotationMethodMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(UserDestinationMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(StompBrokerRelayMessageHandler.class));
 	}
 
 	@Test
@@ -218,10 +222,10 @@ public class MessageBrokerConfigurationTests {
 		Set<MessageHandler> handlers = channel.getSubscribers();
 
 		assertThat(handlers).hasSize(2);
-		assertThat(handlers.contains(context.getBean(UserDestinationMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(SimpleBrokerMessageHandler.class))).isTrue();
+		assertThat(handlers).contains(context.getBean(UserDestinationMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(SimpleBrokerMessageHandler.class));
 
-		assertThat((Object) channel.getExecutor()).isNull();
+		assertThat(channel.getExecutor()).isNull();
 	}
 
 	@Test
@@ -232,8 +236,8 @@ public class MessageBrokerConfigurationTests {
 		Set<MessageHandler> handlers = channel.getSubscribers();
 
 		assertThat(handlers).hasSize(2);
-		assertThat(handlers.contains(context.getBean(UserDestinationMessageHandler.class))).isTrue();
-		assertThat(handlers.contains(context.getBean(StompBrokerRelayMessageHandler.class))).isTrue();
+		assertThat(handlers).contains(context.getBean(UserDestinationMessageHandler.class));
+		assertThat(handlers).contains(context.getBean(StompBrokerRelayMessageHandler.class));
 	}
 
 	@Test
@@ -284,10 +288,10 @@ public class MessageBrokerConfigurationTests {
 
 		List<MessageConverter> converters = compositeConverter.getConverters();
 		assertThat(converters).hasSize(4);
-		assertThat(converters.get(0)).isInstanceOf(StringMessageConverter.class);
-		assertThat(converters.get(1)).isInstanceOf(ByteArrayMessageConverter.class);
-		assertThat(converters.get(2)).isInstanceOf(KotlinSerializationJsonMessageConverter.class);
-		assertThat(converters.get(3)).isInstanceOf(MappingJackson2MessageConverter.class);
+		assertThat(converters).element(0).isInstanceOf(StringMessageConverter.class);
+		assertThat(converters).element(1).isInstanceOf(ByteArrayMessageConverter.class);
+		assertThat(converters).element(2).isInstanceOf(KotlinSerializationJsonMessageConverter.class);
+		assertThat(converters).element(3).isInstanceOf(MappingJackson2MessageConverter.class);
 
 		ContentTypeResolver resolver = ((MappingJackson2MessageConverter) converters.get(3)).getContentTypeResolver();
 		assertThat(((DefaultContentTypeResolver) resolver).getDefaultMimeType()).isEqualTo(MimeTypeUtils.APPLICATION_JSON);
@@ -360,11 +364,11 @@ public class MessageBrokerConfigurationTests {
 
 		List<HandlerMethodArgumentResolver> customResolvers = handler.getCustomArgumentResolvers();
 		assertThat(customResolvers).hasSize(1);
-		assertThat(handler.getArgumentResolvers().contains(customResolvers.get(0))).isTrue();
+		assertThat(handler.getArgumentResolvers()).contains(customResolvers.get(0));
 
 		List<HandlerMethodReturnValueHandler> customHandlers = handler.getCustomReturnValueHandlers();
 		assertThat(customHandlers).hasSize(1);
-		assertThat(handler.getReturnValueHandlers().contains(customHandlers.get(0))).isTrue();
+		assertThat(handler.getReturnValueHandlers()).contains(customHandlers.get(0));
 	}
 
 	@Test
@@ -475,10 +479,10 @@ public class MessageBrokerConfigurationTests {
 		assertThat(registry.getClass()).isNotEqualTo(MultiServerUserRegistry.class);
 
 		UserDestinationMessageHandler handler = context.getBean(UserDestinationMessageHandler.class);
-		assertThat((Object) handler.getBroadcastDestination()).isNull();
+		assertThat(handler.getBroadcastDestination()).isNull();
 
 		Object nullBean = context.getBean("userRegistryMessageHandler");
-		assertThat(nullBean.equals(null)).isTrue();
+		assertThat(nullBean).isEqualTo(null);
 	}
 
 	@Test // SPR-16275
@@ -622,7 +626,9 @@ public class MessageBrokerConfigurationTests {
 
 		@Override
 		public void configureMessageBroker(MessageBrokerRegistry registry) {
-			registry.enableStompBrokerRelay("/topic", "/queue").setAutoStartup(true)
+			registry.enableStompBrokerRelay("/topic", "/queue")
+					.setAutoStartup(true)
+					.setTcpClient(new NoOpTcpClient())
 					.setUserDestinationBroadcast("/topic/unresolved-user-destination")
 					.setUserRegistryBroadcast("/topic/simp-user-registry");
 		}
@@ -676,7 +682,7 @@ public class MessageBrokerConfigurationTests {
 
 
 	@Configuration
-	static abstract class BaseDotSeparatorConfig extends BaseTestMessageBrokerConfig {
+	abstract static class BaseDotSeparatorConfig extends BaseTestMessageBrokerConfig {
 
 		@Override
 		protected void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -785,6 +791,26 @@ public class MessageBrokerConfigurationTests {
 
 	@SuppressWarnings("serial")
 	private static class CustomThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+	}
+
+
+	private static class NoOpTcpClient implements TcpOperations<byte[]> {
+
+		@Override
+		public CompletableFuture<Void> connectAsync(TcpConnectionHandler<byte[]> handler) {
+			return CompletableFuture.completedFuture(null);
+		}
+
+		@Override
+		public CompletableFuture<Void> connectAsync(TcpConnectionHandler<byte[]> handler, ReconnectStrategy strategy) {
+			return CompletableFuture.completedFuture(null);
+		}
+
+		@Override
+		public CompletableFuture<Void> shutdownAsync() {
+			return CompletableFuture.completedFuture(null);
+		}
+
 	}
 
 }

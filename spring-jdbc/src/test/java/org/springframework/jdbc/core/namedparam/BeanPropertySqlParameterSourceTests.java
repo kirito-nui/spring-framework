@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ public class BeanPropertySqlParameterSourceTests {
 	@Test
 	public void successfulPropertyAccess() {
 		BeanPropertySqlParameterSource source = new BeanPropertySqlParameterSource(new TestBean("tb", 99));
-		assertThat(Arrays.asList(source.getReadablePropertyNames()).contains("name")).isTrue();
-		assertThat(Arrays.asList(source.getReadablePropertyNames()).contains("age")).isTrue();
+		assertThat(Arrays.asList(source.getReadablePropertyNames())).contains("name");
+		assertThat(Arrays.asList(source.getReadablePropertyNames())).contains("age");
 		assertThat(source.getValue("name")).isEqualTo("tb");
 		assertThat(source.getValue("age")).isEqualTo(99);
 		assertThat(source.getSqlType("name")).isEqualTo(Types.VARCHAR);

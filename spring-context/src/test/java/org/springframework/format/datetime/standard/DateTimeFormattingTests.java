@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2023 the original author or authors.
+ * Copyright 2002-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -512,7 +512,7 @@ class DateTimeFormattingTests {
 	}
 
 	@Test
-	public void testBindYearMonthAnnotatedPattern() {
+	void testBindYearMonthAnnotatedPattern() {
 		MutablePropertyValues propertyValues = new MutablePropertyValues();
 		propertyValues.add("yearMonthAnnotatedPattern", "12/2007");
 		binder.bind(propertyValues);
@@ -531,7 +531,7 @@ class DateTimeFormattingTests {
 	}
 
 	@Test
-	public void testBindMonthDayAnnotatedPattern() {
+	void testBindMonthDayAnnotatedPattern() {
 		MutablePropertyValues propertyValues = new MutablePropertyValues();
 		propertyValues.add("monthDayAnnotatedPattern", "1/3");
 		binder.bind(propertyValues);
@@ -620,6 +620,19 @@ class DateTimeFormattingTests {
 							.hasCauseInstanceOf(DateTimeParseException.class).cause()
 								.hasMessageStartingWith("Text '210302'")
 								.hasNoCause();
+		}
+
+		@Test
+		void testBindInstantAsLongEpochMillis() {
+			MutablePropertyValues propertyValues = new MutablePropertyValues();
+			propertyValues.add("instant", 1234L);
+			binder.bind(propertyValues);
+			assertThat(binder.getBindingResult().getErrorCount()).isZero();
+			assertThat(binder.getBindingResult().getRawFieldValue("instant"))
+					.isInstanceOf(Instant.class)
+					.isEqualTo(Instant.ofEpochMilli(1234L));
+			assertThat(binder.getBindingResult().getFieldValue("instant"))
+					.hasToString("1970-01-01T00:00:01.234Z");
 		}
 	}
 

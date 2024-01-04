@@ -374,7 +374,7 @@ class RequestResponseBodyMethodProcessorTests {
 	}
 
 	private void testProblemDetailMediaType(String expectedContentType) throws Exception {
-		ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+		MyProblemDetail problemDetail = new MyProblemDetail(HttpStatus.BAD_REQUEST);
 
 		this.servletRequest.setRequestURI("/path");
 
@@ -805,7 +805,7 @@ class RequestResponseBodyMethodProcessorTests {
 	}
 
 	@SuppressWarnings("ConstantConditions")
-	ProblemDetail handleAndReturnProblemDetail() {
+	MyProblemDetail handleAndReturnProblemDetail() {
 		return null;
 	}
 
@@ -821,7 +821,16 @@ class RequestResponseBodyMethodProcessorTests {
 	}
 
 
-	private static abstract class MyParameterizedController<DTO extends Identifiable> {
+	private static class MyProblemDetail extends ProblemDetail {
+
+		public MyProblemDetail(HttpStatus status) {
+			super(status.value());
+		}
+
+	}
+
+
+	private abstract static class MyParameterizedController<DTO extends Identifiable> {
 
 		@SuppressWarnings("unused")
 		public void handleDto(@RequestBody DTO dto) {}
@@ -841,7 +850,7 @@ class RequestResponseBodyMethodProcessorTests {
 
 
 	@SuppressWarnings("unused")
-	private static abstract class MyParameterizedControllerWithList<DTO extends Identifiable> {
+	private abstract static class MyParameterizedControllerWithList<DTO extends Identifiable> {
 
 		public void handleDto(@RequestBody List<DTO> dto) {
 		}
