@@ -5,4 +5,6 @@ public interface UserService {
 	public void getThreadPool();
 
 	String getName();
+
+	void everyDay();
 }
